@@ -27,7 +27,7 @@ React 19 + Vite + TypeScript + TanStack（Router / Query）+ Tailwind CSS 4 + sh
 | `/summary` | 論點總結 | 選單「單人 → 論點總結」 |
 | `/bank/private`、`/bank/public` | 私人 / 公開題庫 | 選單「題庫」 |
 | `/classrooms` | 已加入的教室（學生另有「待處理邀請」「用邀請碼加入」兩個按鈕） | 選單「教室」 |
-| `/explore` | 探索課程：開放加入的課程、我的申請（只有學生） | 選單「探索」 |
+| `/explore` | 探索課程：開放加入的課程、我的申請；老師只能瀏覽課程 | 選單「探索」 |
 | `/classrooms/:id?tab=home\|announcements\|debates\|discussion\|members` | 教室：首頁（簡介、行事曆）、公告、團體辯論列表、個人辯論列表（老師可新增）、成員 | 點進某個教室 |
 | `/classrooms/:id/debates/:id` | 教室辯論：說明、相關資料（連結 / 檔案）、開始討論或進入辯論、結論報告、辯論討論區 | 點進某個辯論 |
 | `/classrooms/:id/activities/:id` | 辯論活動（四個階段 + 結果） | 點進某場辯論 |

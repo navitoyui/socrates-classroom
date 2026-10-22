@@ -117,13 +117,14 @@ export function JoinDialog({ classroom, open, onOpenChange }: { classroom?: Clas
 }
 
 /** 學生的「探索教室」：老師開放探索的教室，可以直接加入或申請 */
-export function DiscoverClassrooms() {
+/** 開放探索的教室；老師只能瀏覽，不能加入 */
+export function DiscoverClassrooms({ teacher = false }: { teacher?: boolean }) {
   const [q, setQ] = useState("");
   const [query, setQuery] = useState("");
   const [picked, setPicked] = useState<ClassroomPreview | null>(null);
   const { data: list = [], isFetching } = useDiscoverClassrooms(query);
   useEffect(() => { const t = setTimeout(() => setQuery(q.trim()), 300); return () => clearTimeout(t); }, [q]);
-  const shown = list.filter((c) => !c.joined);
+  const shown = teacher ? list : list.filter((c) => !c.joined);
   return (
     <section>
       <div className="mb-4">
@@ -141,16 +142,16 @@ export function DiscoverClassrooms() {
             </div>
             <p className="mt-0.5 text-xs text-ink-faint">{c.teacherName} · {c.studentCount} 位學生</p>
             {c.description && <p className="mt-2 line-clamp-2 text-[12.5px] leading-relaxed text-ink-dim">{c.description}</p>}
-            <div className="mt-auto pt-3">
+            {!teacher && <div className="mt-auto pt-3">
               <Button size="sm" variant={c.requireApproval ? "outline" : "default"} disabled={c.myApplication === "pending"} onClick={() => setPicked(c)}>
                 {c.myApplication === "pending" ? "等待審核" : c.requireApproval ? "申請加入" : "加入"}
               </Button>
-            </div>
+            </div>}
           </Card>
         ))}
       </div>
-      {!shown.length && <p className="text-sm text-ink-faint">{list.length ? "符合的教室你都已經加入了。" : query ? "找不到符合的教室。" : "目前沒有開放探索的教室。"}</p>}
-      <JoinDialog classroom={picked ?? undefined} open={!!picked} onOpenChange={(v) => !v && setPicked(null)} />
+      {!shown.length && <p className="text-sm text-ink-faint">{list.length && !teacher ? "符合的教室你都已經加入了。" : query ? "找不到符合的教室。" : "目前沒有開放探索的教室。"}</p>}
+      {!teacher && <JoinDialog classroom={picked ?? undefined} open={!!picked} onOpenChange={(v) => !v && setPicked(null)} />}
     </section>
   );
 }
@@ -178,13 +179,13 @@ export function MyApplications() {
   );
 }
 
-/** 學生的「探索課程」頁（側欄）：自己的申請狀態 + 開放探索的教室 */
+/** 探索課程頁（側欄）：學生看自己的申請與開放探索的教室；老師只瀏覽教室 */
 export function ExplorePage() {
   const { data: me } = useMe();
   return (
     <div className="mx-auto max-w-4xl p-8">
       <h2 className="mb-6 font-serif text-2xl">探索課程</h2>
-      {me?.role === "teacher" ? <p className="text-sm text-ink-faint">這個頁面是給學生找課程用的。</p> : <><MyApplications /><DiscoverClassrooms /></>}
+      {me?.role === "teacher" ? <DiscoverClassrooms teacher /> : <><MyApplications /><DiscoverClassrooms /></>}
     </div>
   );
 }

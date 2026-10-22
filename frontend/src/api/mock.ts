@@ -532,9 +532,9 @@ export const mockApi: Api = {
   },
   async regenerateJoinCode(cid) { await delay(); needTeacher(); findClassroom(cid); const p = policyOf(cid); p.code = newCode(); return structuredClone(p); },
   async discoverClassrooms(q) {
-    await delay(); needStudent();
+    await delay();
     const k = q?.trim().toLowerCase() ?? "";
-    return classrooms.filter((c) => policyOf(c.id).discoverable && (!k || [c.name, c.description, c.teacherName].some((t) => t.toLowerCase().includes(k)))).map(preview);
+    return classrooms.filter((c) => policyOf(c.id).discoverable && (!k || [c.name, c.description, c.teacherName].some((t) => t.toLowerCase().includes(k)))).map((c) => (isTeacher() ? { ...preview(c), joined: false, myApplication: null } : preview(c)));
   },
   async lookupJoinCode(code) {
     await delay(); needStudent();

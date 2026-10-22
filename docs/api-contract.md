@@ -52,7 +52,7 @@ JSON 欄位用 camelCase；id 為字串；時間為 ISO 8601；登入用 cookie�
 | GET | `/api/classrooms/:id/join-policy` | 僅老師 → `JoinPolicy` |
 | PATCH | `/api/classrooms/:id/join-policy` | `Partial<{ codeEnabled, discoverable, requireApproval, questionnaire }>`（僅老師）→ `JoinPolicy`。改問卷不影響已送出的申請 |
 | POST | `/api/classrooms/:id/join-policy/code` | 重新產生邀請碼，舊碼立即失效（僅老師）→ `JoinPolicy` |
-| GET | `/api/classrooms/discover?q=` | 學生 → `ClassroomPreview[]`（只列 `discoverable = true` 的教室） |
+| GET | `/api/classrooms/discover?q=` | 學生或老師 → `ClassroomPreview[]`（只列 `discoverable = true` 的教室；老師只能瀏覽，`joined = false`、`myApplication = null`） |
 | GET | `/api/join-codes/:code` | 學生 → `ClassroomPreview`；代碼不存在或已關閉回 404 |
 | POST | `/api/classrooms/:id/join` | `JoinInput` = `{ code?, answers? }`（學生）→ `JoinResult`。教室不可探索時必須帶有效 `code`；需要審核時必填題目沒回答回 422；已有 pending 申請回 409 |
 | GET | `/api/me/applications` | 學生 → 自己的 `JoinApplication[]` |

@@ -82,7 +82,7 @@ export function AppShell() {
           <Link to="/bank/$kind" params={{ kind: "public" }} className={sub} activeProps={navActive}>公開題庫</Link>
         </NavGroup>
         <Link to="/classrooms" className={navBtn} activeProps={navActive}><GraduationCap className="size-5" /><span>教室</span></Link>
-        {me?.role === "student" && <Link to="/explore" className={navBtn} activeProps={navActive}><Compass className="size-5" /><span>探索</span></Link>}
+        <Link to="/explore" className={navBtn} activeProps={navActive}><Compass className="size-5" /><span>探索</span></Link>
 
         <div className="flex-1" />
         <button

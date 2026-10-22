@@ -45,8 +45,8 @@ export function JoinSettingsCard({ classroomId }: { classroomId: string }) {
         </span>
       </div>
       <div className="divide-y divide-line">
-        <Switch label="開放用邀請碼加入" hint="學生在「教室」頁輸入上面的邀請碼就能找到這個教室。" checked={p.codeEnabled} disabled={update.isPending} onChange={(v) => update.mutate({ codeEnabled: v })} />
-        <Switch label="出現在「探索教室」" hint="所有學生都能搜尋到這個教室並申請加入，不需要邀請碼。" checked={p.discoverable} disabled={update.isPending} onChange={(v) => update.mutate({ discoverable: v })} />
+        <Switch label="開放用邀請碼加入" hint="學生在教室頁輸入上面的邀請碼就能找到這個教室。" checked={p.codeEnabled} disabled={update.isPending} onChange={(v) => update.mutate({ codeEnabled: v })} />
+        <Switch label="出現在探索教室" hint="所有學生都能搜尋到這個教室並申請加入，不需要邀請碼。" checked={p.discoverable} disabled={update.isPending} onChange={(v) => update.mutate({ discoverable: v })} />
         <Switch label="加入需要老師審核" hint="學生要先填寫申請問卷，你通過後才會成為成員。" checked={p.requireApproval} disabled={update.isPending} onChange={(v) => update.mutate({ requireApproval: v })} />
       </div>
       {p.requireApproval && (
