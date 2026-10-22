@@ -5,6 +5,8 @@
  * 真後端上線後整個刪掉即可，頁面程式完全不依賴它。
  * 所有「AI」都是規則式範本（見 debate-ai.ts 開頭說明），不是真正的 LLM。
  */
+import type { ClassSynthesis, StudentConclusion } from "@/api/types";
+import { classSynthesis, simIndividualSummary, studentConclusion } from "./conclusions";
 import * as D from "./debate-ai";
 
 const uid = (p: string) => p + Math.random().toString(36).slice(2, 8);
@@ -30,7 +32,7 @@ export function createActivity(classroom: { id: string; students: string[] }, in
     id: id ?? uid("d"), kind: input.kind ?? "debate", classroomId: classroom.id, title: input.title, statement: input.statement,
     answerMode: input.answerMode, axes: D.makeAxes(input.axes), groupSize: input.groupSize,
     stage: "individual", createdAt: now(), weights: { ...D.DEFAULT_WEIGHTS },
-    members: [], positions: {}, dialogue: [], groups: [], groupState: {}, rooms: [], bye: null, scores: {}, ready: new Set(), stageDeadline: null, completed: new Set(),
+    members: [], positions: {}, dialogue: [], groups: [], groupState: {}, rooms: [], bye: null, scores: {}, ready: new Set(), stageDeadline: null, completed: new Set(), conclusions: {}, synthesis: null,
   };
   a.members = D.makeCohort({ students: classroom.students }, { activityId: a.id });
   acts.push(a);
@@ -105,10 +107,12 @@ export function simulateIndividual(a: any) {
   let n = 0;
   for (const m of a.members) {
     if (!m.sim || a.positions[m.id]?.confirmed) continue;
-    const coords = D.simPosition(a, m);
-    a.positions[m.id] = { coords, summary: D.simSummary(a, m, coords), confirmed: true, rounds: 3 + (n % 5), sim: true };
+    // 個人辯論沒有價值軸，不能用辯論的模擬方式
+    const coords = a.kind === "individual" ? [] : D.simPosition(a, m);
+    const summary = a.kind === "individual" ? simIndividualSummary(n) : D.simSummary(a, m, coords);
+    a.positions[m.id] = { coords, summary, confirmed: true, rounds: 3 + (n % 5), sim: true };
     a.ready.add(m.id); // 模擬同學完成調查就算準備好了
-    if (a.kind === "individual") a.completed.add(m.id);
+    if (a.kind === "individual") { a.completed.add(m.id); a.conclusions[m.id] = { readyAt: Date.now() }; }
     n++;
   }
   return n;
@@ -198,7 +202,73 @@ export function setDeadline(a: any, deadline: string | null) {
 export function setCompleted(a: any, done: boolean) {
   if (a.kind !== "individual") throw new Error("只有個人思辨可以這樣做");
   if (done && !a.positions.you?.confirmed) throw new Error("請先整理並確認你的論點");
-  if (done) a.completed.add("you"); else a.completed.delete("you");
+  if (done) {
+    a.completed.add("you");
+    a.conclusions.you = { readyAt: Date.now() + LLM_DELAY }; // 模擬 LLM 產生需要一點時間
+  } else {
+    a.completed.delete("you");
+    delete a.conclusions.you; // 重新開啟後結論作廢，再次完成時重新產生
+  }
+}
+
+/* ---------------- 個人辯論的 LLM 結論（示範版） ---------------- */
+const LLM_DELAY = 1800;
+const nameOf = (a: any, id: string) => a.members.find((m: any) => m.id === id)?.name ?? "?";
+
+function toConclusion(a: any, id: string, viewer: { teacher: boolean; anon?: string } = { teacher: true }): StudentConclusion {
+  const rec = a.conclusions[id] ?? (a.conclusions[id] = { readyAt: Date.now() });
+  const isMine = !viewer.teacher && id === "you";
+  const shown = viewer.teacher ? nameOf(a, id) : isMine ? "你" : viewer.anon ?? "同學";
+  const base = { memberId: viewer.teacher || isMine ? id : `anon-${shown}`, memberName: shown, isMine };
+  if (Date.now() < rec.readyAt) return { ...base, status: "pending", summary: "", highlights: [], evolution: "", generatedAt: null };
+  const p = a.positions[id];
+  const texts = id === "you" ? userTexts(a) : [];
+  const coverage = id === "you" ? D.coverage(texts) : { claim: true, reason: !!p.summary.reason, evidence: !!p.summary.evidence, counter: false };
+  const c = studentConclusion(shown, p.summary, texts[0] ?? p.summary.claim, coverage, id === "you" ? texts.length : p.rounds ?? 3);
+  return { ...base, status: "ready", ...c, generatedAt: new Date(rec.readyAt).toISOString() };
+}
+
+/** 老師：全班（本名）；學生：全班整合公開前只有自己，公開後全班（其他人匿名為同學 A、B……） */
+export function listConclusions(a: any, teacher: boolean) {
+  if (a.kind !== "individual") return [];
+  const done = a.members.map((m: any) => m.id).filter((id: string) => a.completed.has(id));
+  if (teacher) return done.map((id: string) => toConclusion(a, id));
+  if (!getSynthesis(a, false)) return a.completed.has("you") ? [toConclusion(a, "you", { teacher: false })] : [];
+  let n = 0;
+  return done.map((id: string) => toConclusion(a, id, { teacher: false, anon: id === "you" ? undefined : `同學 ${anonLabel(n++)}` }));
+}
+
+/** 0 → A、25 → Z、26 → AA …… */
+const anonLabel = (i: number): string => (i < 26 ? String.fromCharCode(65 + i) : anonLabel(Math.floor(i / 26) - 1) + String.fromCharCode(65 + (i % 26)));
+
+function toSynthesis(a: any): ClassSynthesis | null {
+  const s = a.synthesis;
+  if (!s) return null;
+  const base = { published: s.published, basedOn: s.ids.length, publishedAt: s.publishedAt };
+  if (Date.now() < s.readyAt) return { ...base, status: "pending", overview: "", themes: [], tensions: [], generatedAt: null };
+  const items = s.ids.map((id: string) => ({ name: nameOf(a, id), claim: a.positions[id]?.summary.claim ?? "" }));
+  return { ...base, status: "ready", ...classSynthesis(items), generatedAt: new Date(s.readyAt).toISOString() };
+}
+
+export function getSynthesis(a: any, teacher: boolean): ClassSynthesis | null {
+  const s = toSynthesis(a);
+  return teacher || s?.published ? s : null;
+}
+
+export function generateSynthesis(a: any) {
+  if (a.kind !== "individual") throw new Error("只有個人辯論有全班整合");
+  const ids = a.members.map((m: any) => m.id).filter((id: string) => a.completed.has(id));
+  if (!ids.length) throw new Error("還沒有同學完成，無法整合");
+  a.synthesis = { ids, readyAt: Date.now() + LLM_DELAY, published: false, publishedAt: null };
+  return toSynthesis(a)!;
+}
+
+export function publishSynthesis(a: any, published: boolean) {
+  const s = toSynthesis(a);
+  if (!s || s.status !== "ready") throw new Error("全班整合還沒產生完成");
+  a.synthesis.published = published;
+  a.synthesis.publishedAt = published ? now() : null;
+  return toSynthesis(a)!;
 }
 
 export function setReady(a: any, ready: boolean) {

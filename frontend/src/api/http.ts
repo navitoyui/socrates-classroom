@@ -175,6 +175,18 @@ export const httpApi: Api = {
   updateNote: (nid, text) => patch(`/api/notes/${nid}`, { text }),
   deleteNote: (nid) => del(`/api/notes/${nid}`),
 
+  listConclusions: (id) => get(`/api/activities/${id}/conclusions`),
+  getSynthesis: async (id) => {
+    try {
+      return await get(`/api/activities/${id}/synthesis`);
+    } catch (e) {
+      if (e instanceof ApiError && e.status === 404) return null; // 還沒產生，或學生在公開前
+      throw e;
+    }
+  },
+  generateSynthesis: (id) => post(`/api/activities/${id}/synthesis`),
+  publishSynthesis: (id, published) => put(`/api/activities/${id}/synthesis/published`, { published }),
+
   listMembers: (id) => get(`/api/activities/${id}/members`),
   listGroups: (id) => get(`/api/activities/${id}/groups`),
   regroup: (id, groupSize) => post(`/api/activities/${id}/groups/regroup`, { groupSize }),

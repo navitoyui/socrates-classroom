@@ -127,6 +127,21 @@ JSON 欄位用 camelCase；id 為字串；時間為 ISO 8601；登入用 cookie�
 | PATCH | `/api/notes/:id` | `{ text }` → `ThinkingNote`（本人） |
 | DELETE | `/api/notes/:id` | 本人，204 |
 
+## 個人辯論的 LLM 結論
+學生完成個人思辨（`PUT …/completion { done: true }`）後，後端呼叫 LLM 產生該生的結論；重新開啟時刪除，再次完成時重新產生。
+全班整合由老師觸發、檢查後再公開給學生；**公開後學生在結算畫面看得到全班整合與所有同學的匿名結論**。只適用 `kind = "individual"` 的活動。
+| 方法 | 路徑 | 說明 |
+|---|---|---|
+| GET | `/api/activities/:id/conclusions` | `StudentConclusion[]`。老師：全班已完成的同學（本名）。學生：全班整合**公開前只有自己**；**公開後是全班已完成的同學**，其他人以「同學 A、同學 B……」匿名、`memberId` 換成匿名代號，自己的那筆 `memberName = "你"`。`isMine` 標示讀取者自己的結論。產生中 `status = "pending"`，前端會每秒重抓到 `ready` |
+| GET | `/api/activities/:id/synthesis` | `ClassSynthesis`。老師一律拿得到（從未產生回 404）；學生只有在 `published = true` 時拿得到，否則 404 |
+| POST | `/api/activities/:id/synthesis` | 僅老師；依目前所有已完成同學的結論產生（或重新產生）→ `ClassSynthesis`，`published` 重設為 `false`。沒有人完成回 422 |
+| PUT | `/api/activities/:id/synthesis/published` | `{ published: boolean }`（僅老師）→ `ClassSynthesis`；還沒產生完成回 409 |
+
+個人結論包含：`summary`（結論摘要）、`highlights`（思考的亮點）、`evolution`（思辨過程的變化）。
+全班整合包含：`overview`（整體結論）、`themes`（主要觀點與人數）、`tensions`（主要分歧）。
+**全班整合會公開給學生，內容不可出現任何學生姓名**（產生時的提示詞要明確要求，只用人數描述）。
+LLM 的提示詞屬於 LLM 組（`llm/`），可併入 #28 的 one-shot 任務閘道。
+
 ## 階段 2：團隊提純
 | 方法 | 路徑 | 說明 |
 |---|---|---|

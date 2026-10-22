@@ -1,14 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Bookmark, BookmarkCheck, Send } from "lucide-react";
+import { Bookmark, BookmarkCheck, ChevronDown, Send } from "lucide-react";
 import { api, type Activity, type ArgumentSummary, type Coverage } from "@/api";
-import { keys, useConfirmPosition, useDialogue, useMembers, useNoteActions, useNotes, usePositions, useProgress, useSetCompleted, useStar } from "@/api/queries";
+import { keys, useConclusions, useConfirmPosition, useDialogue, useMembers, useNoteActions, useNotes, usePositions, useProgress, useSetCompleted, useStar, useSynthesis } from "@/api/queries";
 import { StarMap } from "@/components/star/StarMap";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { ClassResults, ConclusionView, MyConclusion, TeacherSynthesisPanel } from "./Conclusions";
 import { NotesPanel } from "./NotesPanel";
 import { MemberChip, ModeTabs, Panel, Section, StageLayout } from "./shared";
 
@@ -161,26 +162,35 @@ function Investigation({ a, over }: { a: Activity; over: boolean }) {
 function IndividualResult({ a }: { a: Activity }) {
   const { data: progress } = useProgress(a.id);
   const { data: positions = [] } = usePositions(a.id);
+  const { data: synthesis } = useSynthesis(a.id);
   const reopen = useSetCompleted(a.id);
-  const [mode, setMode] = useState<"result" | "notes">("result");
+  const [mode, setMode] = useState<"result" | "notes" | "class">("result");
   const mine = positions.find((p) => p.confirmed);
+  const tabs: ["result" | "notes" | "class", string][] = [["result", "結算"], ["notes", "我的筆記"], ...(synthesis ? [["class", "全班"] as ["class", string]] : [])];
   const result = (
+    <div>
+      <section className="border-b border-line px-5 py-4">
+        <small className="mb-2 block text-[11px] tracking-wider text-bronze">蘇格拉底的結論</small>
+        <MyConclusion a={a} />
+      </section>
     <div className="space-y-5 px-5 py-4">
       <div className="flex items-center gap-2"><Badge tone="olive">已完成</Badge><span className="text-[12px] text-ink-faint">對話 {progress?.rounds ?? 0} 輪</span></div>
       {mine && SUMMARY_KEYS.map((k) => <div key={k}><small className="text-[11px] text-ink-faint">{SUMMARY_LABEL[k]}</small><p className="font-serif text-[15px] leading-relaxed">{mine.summary[k] || "—"}</p></div>)}
       <div><small className="mb-1.5 block text-[11px] text-ink-faint">對話中出現的面向</small><CoverageChips coverage={progress?.coverage} /></div>
       <div className="border-t border-line pt-4">
-        <p className="mb-2 text-[12px] text-ink-faint">想再想清楚一點？重新開啟後可以繼續對話、修改論點，再重新完成。</p>
+        <p className="mb-2 text-[12px] text-ink-faint">想再想清楚一點？重新開啟後可以繼續對話、修改論點，再重新完成（結論會重新產生）。</p>
         <Button variant="outline" size="sm" disabled={reopen.isPending} onClick={() => reopen.mutate(false)}>回去繼續思辨</Button>
         {reopen.error && <p className="mt-1.5 text-[12.5px] text-wine">{reopen.error.message}</p>}
       </div>
     </div>
+    </div>
   );
+  const view = mode === "class" && !synthesis ? "result" : mode; // 老師取消公開時回到結算
   return (
     <StageLayout
-      leftLabel={mode === "result" ? "結算" : "我的筆記"}
-      leftHeader={<ModeTabs items={[["result", "結算"], ["notes", "我的筆記"]]} value={mode} onChange={setMode} />}
-      left={mode === "result" ? result : <NotesPanel a={a} readOnly />}
+      leftLabel={tabs.find(([k]) => k === view)?.[1] ?? "結算"}
+      leftHeader={<ModeTabs items={tabs} value={view} onChange={setMode} />}
+      left={view === "result" ? result : view === "class" ? <ClassResults a={a} /> : <NotesPanel a={a} readOnly />}
       rightLabel="對話紀錄" right={<ChatPanel a={a} readOnly />} />
   );
 }
@@ -203,6 +213,9 @@ export function IndividualStage({ a, teacher, view }: { a: Activity; teacher: bo
 function TeacherIndividual({ a }: { a: Activity }) {
   const qc = useQueryClient();
   const { data: members = [] } = useMembers(a.id);
+  const { data: conclusions = [] } = useConclusions(a.id, a.kind === "individual");
+  const [tab, setTab] = useState<"members" | "synthesis">("members");
+  const [open, setOpen] = useState<string | null>(null);
   const { data: star } = useStar(a.id, "individual", a.kind === "debate");
   const solo = a.kind === "individual";
   const finished = members.filter((m) => m.individual?.status === (solo ? "done" : "confirmed")).length;
@@ -213,7 +226,7 @@ function TeacherIndividual({ a }: { a: Activity }) {
       <Section>
         <p className="mb-3 text-[12.5px] leading-relaxed text-ink-faint">{solo ? <>每位同學各自跟 AI 對話、整理<b className="text-ink">論點</b>，按「完成」後看到自己的結算。</> : <>每位同學獨立跟 AI 對話；AI 只提問。完成後每人產出<b className="text-ink">座標</b>與<b className="text-ink">論點總結</b>。</>}</p>
         <div className="grid grid-cols-[4em_1fr_auto] items-center gap-3 text-[13px]"><span>{solo ? "已完成" : "已確認"}</span><span className="h-2 overflow-hidden rounded bg-bg-3"><i className="block h-full bg-bronze" style={{ width: `${members.length ? (finished / members.length) * 100 : 0}%` }} /></span><em className="not-italic text-ink-faint">{finished} / {members.length}</em></div>
-        {api.dev && pending && <Button variant="outline" size="sm" className="mt-3" onClick={async () => { await api.dev!.simulateIndividual(a.id); qc.invalidateQueries({ queryKey: keys.members(a.id) }); qc.invalidateQueries({ queryKey: keys.star(a.id) }); }}>模擬同學完成調查</Button>}
+        {api.dev && pending && <Button variant="outline" size="sm" className="mt-3" onClick={async () => { await api.dev!.simulateIndividual(a.id); for (const k of [keys.members(a.id), keys.star(a.id), keys.conclusions(a.id)]) qc.invalidateQueries({ queryKey: k }); }}>模擬同學完成{solo ? "思辨" : "調查"}</Button>}
       </Section>
       {!solo && <Section>
         <CardTitle className="flex items-center justify-between">立場星圖 <span className="font-sans text-xs font-normal text-ink-faint">只有老師看得到</span></CardTitle>
@@ -221,20 +234,35 @@ function TeacherIndividual({ a }: { a: Activity }) {
       </Section>}
     </>
   );
-  const right = (
+  const memberList = (
     <div className="min-h-0 flex-1 overflow-y-auto px-5">
       {members.map((m) => {
         const st = m.individual?.status ?? "todo";
+        const c = conclusions.find((x) => x.memberId === m.id);
+        const expanded = open === m.id && !!c;
         return (
-          <div key={m.id} className="grid grid-cols-[1.3fr_auto_3.5em_1.6fr] items-center gap-3 border-b border-line py-3 text-[13px] max-md:grid-cols-[1fr_auto]">
-            <span><MemberChip m={m} />{m.id === "you" && <em className="ml-2 rounded-full bg-bg-3 px-2 py-0.5 text-[10px] not-italic text-ink-dim">學生模式的你</em>}</span>
-            <Badge tone={STATUS_TONE[st]}>{STATUS_NAME[st]}</Badge>
-            <span className="text-xs text-ink-faint max-md:hidden">{m.individual?.rounds ?? 0} 輪</span>
-            <span className="truncate text-xs text-ink-dim max-md:hidden">{m.individual?.claim ?? "—"}</span>
+          <div key={m.id} className="border-b border-line">
+            <div className="grid grid-cols-[1.3fr_auto_3.5em_1.6fr_1.5rem] items-center gap-3 py-3 text-[13px] max-md:grid-cols-[1fr_auto_1.5rem]">
+              <span><MemberChip m={m} />{m.id === "you" && <em className="ml-2 rounded-full bg-bg-3 px-2 py-0.5 text-[10px] not-italic text-ink-dim">學生模式的你</em>}</span>
+              <Badge tone={STATUS_TONE[st]}>{STATUS_NAME[st]}</Badge>
+              <span className="text-xs text-ink-faint max-md:hidden">{m.individual?.rounds ?? 0} 輪</span>
+              <span className="truncate text-xs text-ink-dim max-md:hidden">{m.individual?.claim ?? "—"}</span>
+              {c ? (
+                <button type="button" aria-expanded={expanded} aria-label={`${expanded ? "收起" : "展開"}${m.name}的結論`} title="蘇格拉底的結論" onClick={() => setOpen(expanded ? null : m.id)}
+                  className="cursor-pointer text-ink-faint hover:text-bronze"><ChevronDown className={cn("size-4 transition-transform", expanded && "rotate-180")} /></button>
+              ) : <span />}
+            </div>
+            {expanded && <div className="mb-4 ml-8 border-l-2 border-bronze-dim pl-4"><ConclusionView c={c} /></div>}
           </div>
         );
       })}
     </div>
   );
-  return <StageLayout leftLabel={SURVEY_NAME[a.kind]} left={left} rightLabel="成員進度" right={right} />;
+  if (!solo) return <StageLayout leftLabel={SURVEY_NAME[a.kind]} left={left} rightLabel="成員進度" right={memberList} />;
+  return (
+    <StageLayout leftLabel={SURVEY_NAME[a.kind]} left={left}
+      rightLabel={tab === "members" ? "成員進度" : "全班整合"}
+      rightHeader={<ModeTabs items={[["members", "成員進度"], ["synthesis", "全班整合"]]} value={tab} onChange={setTab} />}
+      right={tab === "members" ? memberList : <div className="min-h-0 flex-1 overflow-y-auto"><TeacherSynthesisPanel a={a} /></div>} />
+  );
 }

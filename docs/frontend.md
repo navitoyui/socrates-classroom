@@ -76,6 +76,7 @@ React 19 + Vite + TypeScript + TanStack（Router / Query）+ Tailwind CSS 4 + sh
 | `pages/ActivityPage.tsx` | 辯論活動的外框：標題列（右上角是目前階段與控制）、依階段切換的左右兩欄、最下方的進度色條。團體辯論是四階段辯論，個人辯論是個人思辨 → 結算 | `/classrooms/:id/activities/:id` |
 | `pages/StageControls.tsx` | 標題列右上角：目前階段、倒數、準備人數 / 「我準備好了」、推進；老師的「⋯」選單（限時、直接結束）；最下方的進度色條（點已過的段落可回顧） | 辯論活動裡 |
 | `pages/stages/IndividualStage.tsx` | 辯論的階段 1，也是個人辯論的「個人思辨」：左欄用切換按鈕在「個人調查 / 個人思辨」（進度、直接在欄內整理 / 修改論點，不顯示座標）與「我的筆記」之間切換；右欄與蘇格拉底對話（可標註成筆記）。個人思辨確認論點後按「完成」進入結算（論點、四個面向、筆記、對話紀錄），可重新開啟。老師視角是成員進度表（辯論另有星圖） | 辯論活動裡 |
+| `pages/stages/Conclusions.tsx` | 個人辯論的 LLM 結論：學生自己的結論、全班整合的內容，以及老師產生 / 公開全班整合的面板 | 個人辯論的結算與老師的進度頁 |
 | `pages/stages/NotesPanel.tsx` | 學生的思路筆記：標註的重點與自己寫的想法，只有本人看得到 | 階段 1、2 左欄的「我的筆記」 |
 | `pages/stages/TeamStage.tsx` | 階段 2：分組、組內討論、AI 整理論點 / 丟反例、投票、分裂、重新分組；學生左欄可切換「我的組別 / 我的筆記」；星圖只有老師看得到 | 辯論活動裡 |
 | `pages/stages/DebateStage.tsx` | 階段 3：場次、主持人、發言與計時、AI 裁判分數 | 辯論活動裡 |
@@ -150,6 +151,8 @@ React 19 + Vite + TypeScript + TanStack（Router / Query）+ Tailwind CSS 4 + sh
 | 老師刪除辯論 | `ClassroomDebatePage.tsx` 的 `DeleteDialog` → `api.deleteTopic` | `DELETE /api/topics/:id` |
 | 老師加連結 / 上傳檔案 / 移除資料 | `ClassroomDebatePage.tsx` 的 `DebateInfo` | `POST /api/topics/:id/resources`、`POST …/resources/files`（multipart）、`DELETE …/resources/:id` |
 | 個人辯論的入口與完成人數 | `ClassroomDebatePage.tsx` 的 `StartPanel` → `useMembers` | `GET /api/activities/:id/members` |
+| 個人辯論的個人結論（LLM） | `Conclusions.tsx` → `useConclusions` | `GET /api/activities/:id/conclusions` |
+| 全班結論整合：讀取 / 老師產生 / 公開 | `Conclusions.tsx` → `useSynthesis`、`useSynthesisActions` | `GET`、`POST /api/activities/:id/synthesis`、`PUT …/synthesis/published` |
 | 個人思辨完成 / 重新開啟 | `IndividualStage.tsx` → `useSetCompleted` | `PUT /api/activities/:id/completion` |
 | 團體辯論的辯論進度（卡片上的進度條） | `useActivities`、`useActivity` | `GET /api/classrooms/:id/activities`、`GET /api/activities/:id` |
 | 辯論活動資料 | `ActivityPage.tsx` → `useActivity` | `GET /api/activities/:id` |

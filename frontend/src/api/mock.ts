@@ -297,6 +297,10 @@ export const mockApi: Api = {
   },
   async advanceActivity(id) { await delay(); return E.toActivity(E.advance(E.findAct(id))); },
   async finishActivity(id) { await delay(); needTeacher(); return E.toActivity(E.finish(E.findAct(id))); },
+  async listConclusions(id) { await delay(60); return E.listConclusions(E.findAct(id), isTeacher()); },
+  async getSynthesis(id) { await delay(60); return E.getSynthesis(E.findAct(id), isTeacher()); },
+  async generateSynthesis(id) { await delay(); needTeacher(); return E.generateSynthesis(E.findAct(id)); },
+  async publishSynthesis(id, published) { await delay(); needTeacher(); return E.publishSynthesis(E.findAct(id), published); },
   async setCompleted(id, done) { await delay(); needStudent(); E.setCompleted(E.findAct(id), done); },
   async setStageDeadline(id, deadline) { await delay(60); needTeacher(); return E.toActivity(E.setDeadline(E.findAct(id), deadline)); },
 

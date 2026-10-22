@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "./index";
-import type { Activity, AnnouncementInput, ArgumentSummary, BankKind, ClassroomInput, ClassroomTopic, JoinInput, JoinPolicy, NoteInput, PostInput, TopicInput } from "./index";
+import type { Activity, AnnouncementInput, ArgumentSummary, ClassSynthesis, BankKind, ClassroomInput, ClassroomTopic, JoinInput, JoinPolicy, NoteInput, PostInput, TopicInput } from "./index";
 
 /** 每個查詢的 key 集中在這裡，讓後端事件（SSE）進來時知道要讓哪些資料失效 */
 export const keys = {
@@ -21,6 +21,8 @@ export const keys = {
   calendar: (cid: string, month: string) => ["calendar", cid, month] as const,
   reports: (tid: string) => ["reports", tid] as const,
   notes: (aid: string) => ["notes", aid] as const,
+  conclusions: (aid: string) => ["conclusions", aid] as const,
+  synthesis: (aid: string) => ["synthesis", aid] as const,
   topic: (id: string) => ["topic", id] as const,
   activity: (id: string) => ["activity", id] as const,
   dialogue: (id: string) => ["dialogue", id] as const,
@@ -53,6 +55,15 @@ export const useCalendar = (cid: string, from: Date, to: Date) =>
   useQuery({ queryKey: keys.calendar(cid, from.toISOString()), queryFn: () => api.listCalendar({ classroomId: cid, from: from.toISOString(), to: to.toISOString() }), placeholderData: (prev) => prev });
 export const useReports = (tid: string, enabled = true) => useQuery({ queryKey: keys.reports(tid), queryFn: () => api.listReports(tid), enabled });
 export const useNotes = (aid: string, enabled = true) => useQuery({ queryKey: keys.notes(aid), queryFn: () => api.listNotes(aid), enabled });
+/** 個人辯論的 LLM 結論：產生中（pending）時每秒重抓，直到完成 */
+export const useConclusions = (aid: string, enabled = true) => useQuery({
+  queryKey: keys.conclusions(aid), queryFn: () => api.listConclusions(aid), enabled: enabled && !!aid,
+  refetchInterval: (q) => (q.state.data?.some((c) => c.status === "pending") ? 1000 : false),
+});
+export const useSynthesis = (aid: string, enabled = true) => useQuery({
+  queryKey: keys.synthesis(aid), queryFn: () => api.getSynthesis(aid), enabled: enabled && !!aid,
+  refetchInterval: (q) => (q.state.data?.status === "pending" ? 1000 : false),
+});
 export const useTopics = (cid: string) => useQuery({ queryKey: keys.topics(cid), queryFn: () => api.listTopics(cid) });
 export const useTopic = (id: string) => useQuery({ queryKey: keys.topic(id), queryFn: () => api.getTopic(id) });
 export const useActivity = (id: string) => useQuery({ queryKey: keys.activity(id), queryFn: () => api.getActivity(id), enabled: !!id });
@@ -245,8 +256,18 @@ export function useSetCompleted(id: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (done: boolean) => api.setCompleted(id, done),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: keys.members(id) }); qc.invalidateQueries({ queryKey: keys.positions(id) }); },
+    onSuccess: () => { for (const k of [keys.members(id), keys.positions(id), keys.conclusions(id)]) qc.invalidateQueries({ queryKey: k }); },
   });
+}
+
+/** 老師：產生 / 公開全班整合 */
+export function useSynthesisActions(id: string) {
+  const qc = useQueryClient();
+  const onSuccess = (s: ClassSynthesis) => qc.setQueryData(keys.synthesis(id), s);
+  return {
+    generate: useMutation({ mutationFn: () => api.generateSynthesis(id), onSuccess }),
+    publish: useMutation({ mutationFn: (published: boolean) => api.publishSynthesis(id, published), onSuccess }),
+  };
 }
 
 export function useSetReady(id: string) {

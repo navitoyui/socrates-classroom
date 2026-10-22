@@ -3,8 +3,8 @@ import type {
   CalendarEvent, Classroom, ClassroomInput, ClassroomMember, ClassroomPreview, ClassroomTopic,
   CreateActivityInput, DialogueMessage, DiscussionPost, Group, GroupArgument, GroupMessage,
   ImportMembersResult, JoinApplication, JoinInput, JoinPolicy, JoinResult, Judgment, Member,
-  ArgumentSummary, NoteInput, Position, PositionDraft, PostInput, Progress, Room, ScoreRow, StarData,
-  ThinkingNote, TopicInput, TopicReport, TopicResource, Turn, User, Role, Vote,
+  ArgumentSummary, ClassSynthesis, NoteInput, Position, PositionDraft, PostInput, Progress, Room, ScoreRow, StarData,
+  StudentConclusion, ThinkingNote, TopicInput, TopicReport, TopicResource, Turn, User, Role, Vote,
 } from "./types";
 
 /**
@@ -109,6 +109,19 @@ export interface Api {
   createNote(activityId: string, input: NoteInput): Promise<ThinkingNote>;
   updateNote(noteId: string, text: string): Promise<ThinkingNote>;
   deleteNote(noteId: string): Promise<void>;
+
+  /* 個人辯論的 LLM 結論 */
+  /**
+   * 老師：全班已完成的同學（本名）。
+   * 學生：全班整合公開前只有自己；公開後是全班已完成的同學，其他人匿名。
+   */
+  listConclusions(activityId: string): Promise<StudentConclusion[]>;
+  /** 老師一律拿得到；學生只有在公開後才拿得到，否則為 null */
+  getSynthesis(activityId: string): Promise<ClassSynthesis | null>;
+  /** 老師產生（或重新產生）全班整合；重新產生後回到未公開 */
+  generateSynthesis(activityId: string): Promise<ClassSynthesis>;
+  /** 老師公開 / 取消公開全班整合 */
+  publishSynthesis(activityId: string, published: boolean): Promise<ClassSynthesis>;
 
   /* 階段 2：團隊提純 */
   listMembers(activityId: string): Promise<Member[]>;

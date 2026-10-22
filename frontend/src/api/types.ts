@@ -442,6 +442,45 @@ export interface ScoreRow {
 }
 
 /* ---------- 學生的思路筆記（只有本人看得到） ---------- */
+/* ---------- 個人辯論的 LLM 結論 ---------- */
+export type GenerationStatus = "pending" | "ready" | "failed";
+
+/** 每位同學完成個人思辨後，由 LLM 依對話與論點產生的結論 */
+export interface StudentConclusion {
+  /** 學生看其他同學時是匿名代號（不是真的成員 id） */
+  memberId: string;
+  /** 老師看到本名；學生看其他同學時是「同學 A、同學 B……」，自己是「你」 */
+  memberName: string;
+  /** 是不是讀取者自己的結論 */
+  isMine: boolean;
+  /** pending = LLM 產生中；重新開啟後會刪除，再次完成時重新產生 */
+  status: GenerationStatus;
+  /** 結論摘要：最後的立場與理由 */
+  summary: string;
+  /** 思考的亮點：想得最清楚、最有說服力的地方 */
+  highlights: string[];
+  /** 思辨過程的變化：從一開始的想法到最後的結論 */
+  evolution: string;
+  generatedAt: string | null;
+}
+
+/** 全班結論整合：老師產生，看過後可以公開給學生（公開後學生也看得到其他同學的匿名結論） */
+export interface ClassSynthesis {
+  status: GenerationStatus;
+  /** 公開後學生才看得到；重新產生後回到未公開 */
+  published: boolean;
+  /** 產生時納入的完成人數 */
+  basedOn: number;
+  /** 全班整體的結論 */
+  overview: string;
+  /** 主要觀點，以及持這個觀點的人數（會公開給學生，不可出現姓名） */
+  themes: { title: string; detail: string; count: number }[];
+  /** 主要的分歧 */
+  tensions: string[];
+  generatedAt: string | null;
+  publishedAt: string | null;
+}
+
 export interface ThinkingNote {
   id: string;
   activityId: string;
