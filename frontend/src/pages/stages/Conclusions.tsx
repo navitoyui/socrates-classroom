@@ -77,7 +77,6 @@ export function ClassResults({ a }: { a: Activity }) {
       </section>
       <section className="px-5 py-4">
         <small className="mb-1 block text-[11px] tracking-wider text-bronze">每位同學的結論 · {list.length} 人</small>
-        <p className="mb-3 text-[11.5px] text-ink-faint">其他同學以匿名顯示。</p>
         {others.map((c) => (
           <article key={c.memberId} className="border-t border-line py-4 first:border-t-0">
             <b className={cn("mb-2 block text-[13px] font-medium", c.isMine && "text-bronze")}>{c.memberName}</b>
@@ -100,14 +99,12 @@ export function TeacherSynthesisPanel({ a }: { a: Activity }) {
     <div className="space-y-4 px-5 py-4">
       <div className="flex flex-wrap items-center gap-2">
         {s && s.status === "ready" && <Badge tone={s.published ? "olive" : "neutral"}>{s.published ? "已公開給學生" : "未公開"}</Badge>}
-        <span className="text-[12.5px] text-ink-faint">目前已完成 {done} / {members.length} 人{s && s.status === "ready" && s.basedOn !== done ? `（整合時是 ${s.basedOn} 人，可以重新產生）` : ""}</span>
+        <span className="text-[12.5px] text-ink-faint">目前已完成 {done} / {members.length} 人</span>
       </div>
       <div className="flex flex-wrap gap-2">
         <Button size="sm" variant={s ? "outline" : "default"} disabled={!done || generate.isPending || s?.status === "pending"} onClick={() => generate.mutate()}>{s ? "重新產生" : "產生全班整合"}</Button>
         {s && s.status === "ready" && <Button size="sm" variant={s.published ? "outline" : "default"} disabled={publish.isPending} onClick={() => publish.mutate(!s.published)}>{s.published ? "取消公開" : "公開給學生"}</Button>}
       </div>
-      {!s && <p className="text-[12.5px] leading-relaxed text-ink-faint">由 AI 整合所有已完成同學的結論：整體結論、主要觀點與人數、主要分歧。產生後先由你檢查，再決定是否公開給學生。</p>}
-      {s?.status === "ready" && !s.published && <p className="text-[12px] leading-relaxed text-ink-faint">公開後，已完成的學生會在結算畫面的「全班」分頁看到這份整合，以及所有同學的結論（其他同學以匿名顯示）。重新產生會回到「未公開」。</p>}
       {error && <p className="text-[12.5px] text-wine">{error.message}</p>}
       {s && <div className="border-t border-line pt-4"><SynthesisView s={s} /></div>}
     </div>

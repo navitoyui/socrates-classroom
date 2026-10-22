@@ -129,7 +129,7 @@ function HomeTab({ classroom, teacher, onEdit }: { classroom: Classroom; teacher
         <div className="mb-2 text-xs tracking-wider text-ink-faint">教室簡介</div>
         {classroom.description
           ? <p className="whitespace-pre-line text-[14px] leading-relaxed">{classroom.description}</p>
-          : <p className="text-sm text-ink-faint">{teacher ? <>還沒有簡介。<button type="button" onClick={onEdit} className="cursor-pointer text-bronze hover:underline">補上簡介</button>，讓學生知道這堂課要討論什麼。</> : "老師還沒有寫教室簡介。"}</p>}
+          : <p className="text-sm text-ink-faint">{teacher ? <>還沒有簡介。<button type="button" onClick={onEdit} className="cursor-pointer text-bronze hover:underline">補上簡介</button></> : "老師還沒有寫教室簡介。"}</p>}
         <p className="mt-3 text-xs text-ink-faint">授課老師：{classroom.teacherName}</p>
       </Card>
       <CalendarCard classroomId={classroom.id} />

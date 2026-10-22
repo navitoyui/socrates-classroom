@@ -40,7 +40,7 @@ export function JoinSettingsCard({ classroomId }: { classroomId: string }) {
         <span className="flex gap-1.5">
           <Button variant="outline" size="sm" disabled={!p.codeEnabled} onClick={copy}>{copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}{copied ? "已複製" : "複製"}</Button>
           {confirmRegen
-            ? <><Button variant="danger" size="sm" disabled={regen.isPending} onClick={() => regen.mutate(undefined, { onSuccess: () => setConfirmRegen(false) })}>確定換新碼（舊碼立即失效）</Button><Button variant="ghost" size="sm" onClick={() => setConfirmRegen(false)}>取消</Button></>
+            ? <><Button variant="danger" size="sm" disabled={regen.isPending} onClick={() => regen.mutate(undefined, { onSuccess: () => setConfirmRegen(false) })}>確定換新碼</Button><Button variant="ghost" size="sm" onClick={() => setConfirmRegen(false)}>取消</Button></>
             : <Button variant="ghost" size="sm" onClick={() => setConfirmRegen(true)}><RefreshCw className="size-3.5" />重新產生</Button>}
         </span>
       </div>
@@ -82,7 +82,7 @@ function QuestionnaireDialog({ classroomId, questions, open, onOpenChange }: { c
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogTitle>申請問卷</DialogTitle>
-        <DialogDescription>學生申請加入時要回答這些問題。修改問卷不影響已經送出的申請。</DialogDescription>
+        <DialogDescription>學生申請加入時要回答這些問題。</DialogDescription>
         <div className="space-y-3">
           {qs.map((q, i) => (
             <div key={q.id} className="rounded-2xl border border-line p-3.5">
@@ -139,11 +139,11 @@ function ApplicationRow({ a, classroomId }: { a: JoinApplication; classroomId: s
       </div>
       {a.answers.length > 0 && (
         <dl className="mt-2 space-y-1.5 text-[13px]">
-          {a.answers.map((x) => <div key={x.questionId}><dt className="text-[11.5px] text-ink-faint">{x.prompt}</dt><dd className="whitespace-pre-line">{x.answer || <span className="text-ink-faint">（未回答）</span>}</dd></div>)}
+          {a.answers.map((x) => <div key={x.questionId}><dt className="text-[11.5px] text-ink-faint">{x.prompt}</dt><dd className="whitespace-pre-line">{x.answer || <span className="text-ink-faint">未回答</span>}</dd></div>)}
         </dl>
       )}
       <div className="mt-3 flex flex-wrap gap-2">
-        <Input className="h-8 min-w-48 flex-1" placeholder="給學生的附註（選填，例如拒絕的原因）" value={note} onChange={(e) => setNote(e.target.value)} />
+        <Input className="h-8 min-w-48 flex-1" placeholder="給學生的附註" value={note} onChange={(e) => setNote(e.target.value)} />
         <Button variant="outline" size="sm" disabled={review.isPending} onClick={() => review.mutate({ id: a.id, decision: "reject", note })}>拒絕</Button>
         <Button size="sm" disabled={review.isPending} onClick={() => review.mutate({ id: a.id, decision: "approve", note })}>通過</Button>
       </div>
@@ -180,7 +180,7 @@ export function ImportMembersButton({ classroomId }: { classroomId: string }) {
       <Dialog open={open} onOpenChange={close}>
         <DialogContent className="max-w-lg">
           <DialogTitle>批次匯入成員</DialogTitle>
-          <DialogDescription>每行一個帳號或姓名，也可以直接從試算表複製一整欄貼上。</DialogDescription>
+          <DialogDescription>每行一個帳號或姓名。</DialogDescription>
           {result ? (
             <div className="space-y-3 text-sm">
               <p>已加入 <b className="text-olive">{result.added.length}</b> 位{result.skipped.length > 0 && <>，略過 <b className="text-wine">{result.skipped.length}</b> 位</>}。</p>

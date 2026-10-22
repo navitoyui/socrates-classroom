@@ -46,7 +46,7 @@ export function NotesPanel({ a, readOnly }: { a: Activity; readOnly: boolean }) 
       <p className="mb-2 text-[11.5px] text-ink-faint">只有你看得到。</p>
       {notes.length > 0
         ? <ul>{notes.map((n) => <NoteRow key={n.id} n={n} activityId={a.id} readOnly={readOnly} />)}</ul>
-        : <p className="text-[12.5px] leading-relaxed text-ink-faint">在對話裡把滑鼠移到一句話上，按「標註」就會收進這裡；也可以寫下自己的想法。</p>}
+        : <p className="text-[12.5px] leading-relaxed text-ink-faint">還沒有筆記。</p>}
       {!readOnly && (
         <div className="mt-3 flex items-end gap-2">
           <Textarea rows={1} placeholder="寫下現在的想法…" value={text} onChange={(e) => setText(e.target.value)}

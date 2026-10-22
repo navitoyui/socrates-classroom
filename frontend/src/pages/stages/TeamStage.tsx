@@ -91,7 +91,7 @@ export function TeamStage({ a, teacher, over }: { a: Activity; teacher: boolean;
       </Section>
       {teacher && (
         <Section>
-          <CardTitle className="flex items-center justify-between">立場星圖 <span className="font-sans text-xs font-normal text-ink-faint">顏色 = 組別 · 只有老師看得到</span></CardTitle>
+          <CardTitle className="flex items-center justify-between">立場星圖 <span className="font-sans text-xs font-normal text-ink-faint">顏色 = 組別</span></CardTitle>
           {star && <StarMap data={star} compact />}
           <div className="mt-2.5 flex flex-wrap gap-x-3.5 gap-y-1 text-xs text-ink-dim">{groups.map((x, i) => <span key={x.id}><i className="mr-1.5 inline-block size-2.5 rounded-full align-middle" style={{ background: groupColor(i) }} />{x.label}</span>)}</div>
         </Section>
@@ -119,7 +119,7 @@ export function TeamStage({ a, teacher, over }: { a: Activity; teacher: boolean;
           {claims.map((c) => <ArgCard key={c.id} arg={c} kids={args.filter((k) => k.parentId === c.id)} group={g} myId={me?.id} canVote={canAct} onVote={(v) => void wrap(() => api.vote(c.id, v))()} />)}
           {canSplit && (
             <div className="rounded-2xl border border-dashed border-wine bg-wine-soft p-3.5 text-[12.5px]"><b>組內出現分歧</b>
-              <p className="my-1.5 leading-relaxed text-ink-dim">對「{contested!.text}」，有 {dissent.length} 位組員不同意。與其硬湊成一個立場，也可以讓不同意的人另組，各自把論點練強。</p>
+              <p className="my-1.5 leading-relaxed text-ink-dim">對「{contested!.text}」，有 {dissent.length} 位組員不同意。</p>
               {(canAct || (teacher && !over)) && <Button size="sm" onClick={wrap(() => api.splitGroup(g.id))}>分裂成兩組</Button>}
             </div>
           )}

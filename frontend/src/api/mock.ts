@@ -119,7 +119,7 @@ const topics: ClassroomTopic[] = [
     dueAt: iso(14), resources: [], createdAt: iso(-1), updatedAt: iso(-1) },
 ];
 E.findAct("d1").topicId = "t1";
-E.createActivity(classrooms[0], { kind: "individual", title: topics[1].title, statement: topics[1].title, answerMode: "both", groupSize: 3, axes: [] }, "d2").topicId = "t2";
+E.createActivity(classrooms[0], { kind: "individual", title: topics[1].title, statement: topics[1].title, answerMode: "both", groupSize: 3, axes: [{ name: "判準", left: "結果", right: "原則" }, { name: "關係", left: "體貼", right: "坦白" }] }, "d2").topicId = "t2";
 const findTopic = (id: string) => {
   const t = topics.find((x) => x.id === id);
   if (!t) throw new Error("找不到辯論");
@@ -137,7 +137,7 @@ const announcements: StoredAnnouncement[] = [
   { id: "an2", classroomId: "c1", title: "下週請先讀完《理想國》第一卷", pinned: false, authorName: "林老師", publishAt: iso(-1), createdAt: iso(-1), updatedAt: iso(-1),
     body: "辯論「正義是否只是強者的利益？」的閱讀材料已放在辯論頁，上課前請先讀完。" },
   { id: "an3", classroomId: "c1", title: "第二場辯論開放報名", pinned: false, authorName: "林老師", publishAt: iso(3), createdAt: iso(0), updatedAt: iso(0),
-    body: "（排程中的公告：學生要到發布時間才看得到）" },
+    body: "排程中的公告：學生要到發布時間才看得到" },
 ];
 /* 討論區：authorLabel / authorId 依讀取者身分決定（匿名對同學隱藏、對老師與本人顯示） */
 type StoredPost = Omit<DiscussionPost, "authorLabel" | "authorId" | "isMine"> & { authorId: string; authorName: string };
@@ -155,7 +155,7 @@ const posts: StoredPost[] = [
 /* 結論報告：假後端的檔案用 data URL 或 object URL，重新整理就消失 */
 const reports: TopicReport[] = [
   { id: "rp1", topicId: "t2", studentId: "s2", studentName: "王○安", comment: "我的結論是：說實話是原則，但不是唯一的原則。", submittedAt: iso(-0.5),
-    file: { name: "王○安-結論報告.txt", url: "data:text/plain;charset=utf-8," + encodeURIComponent("（示範用的報告內容）"), size: 1520, mimeType: "text/plain" } },
+    file: { name: "王○安-結論報告.txt", url: "data:text/plain;charset=utf-8," + encodeURIComponent("示範用的報告內容"), size: 1520, mimeType: "text/plain" } },
 ];
 
 /* 思路筆記：activityId → 筆記（假後端只有一位學生） */
@@ -189,7 +189,7 @@ const visibleClassrooms = () => classrooms.filter((c) => (isTeacher() ? c.teache
 const toPost = (x: StoredPost): DiscussionPost => {
   const mine = x.authorId === myId();
   const reveal = !x.anonymous || isTeacher() || mine;
-  const label = !x.anonymous ? x.authorName : mine ? "你（匿名）" : isTeacher() ? `${x.authorName}（匿名）` : "匿名同學";
+  const label = !x.anonymous ? x.authorName : mine ? "你 · 匿名" : isTeacher() ? `${x.authorName} · 匿名` : "匿名同學";
   return { id: x.id, classroomId: x.classroomId, topicId: x.topicId, parentId: x.parentId, body: x.deleted ? "" : x.body, anonymous: x.anonymous,
     authorLabel: label, authorId: reveal ? x.authorId : null, authorRole: x.authorRole, isMine: mine, createdAt: x.createdAt, deleted: x.deleted };
 };
@@ -381,7 +381,8 @@ export const mockApi: Api = {
   async getStarData(id) {
     await delay(60);
     const a = E.findAct(id);
-    if (!E.coordsVisible(a, isTeacher())) throw new Error("立場星圖在活動結束後才會公開");
+    if (!a.axes.length) throw new Error("這場辯論沒有價值軸");
+    if (!E.coordsVisible(a, isTeacher())) throw new Error(a.kind === "individual" ? "完成後才看得到立場星圖" : "立場星圖在活動結束後才會公開");
     return E.starData(a);
   },
 
@@ -403,15 +404,13 @@ export const mockApi: Api = {
     await delay(); needTeacher();
     const c = findClassroom(cid);
     if (!input.title.trim()) throw new Error("請填寫辯論主題");
-    if (input.type === "group" && !input.activity) throw new Error("團體辯論需要辯論設定");
+    if (!input.activity?.axes.length) throw new Error("至少要有一條價值軸");
     const at = new Date().toISOString();
     const t: ClassroomTopic = {
       id: newId("t"), classroomId: cid, type: input.type, title: input.title.trim(), description: input.description.trim(),
       dueAt: input.dueAt, acceptsReports: input.acceptsReports, activityId: null, resources: [], postCount: 0, createdAt: at, updatedAt: at,
     };
-    const a = input.type === "group" && input.activity
-      ? E.createActivity(c, { ...input.activity, title: t.title, statement: t.title })
-      : E.createActivity(c, { kind: "individual", title: t.title, statement: t.title, answerMode: "both", groupSize: 3, axes: [] });
+    const a = E.createActivity(c, { ...input.activity, kind: input.type === "group" ? "debate" : "individual", title: t.title, statement: t.title });
     a.topicId = t.id;
     t.activityId = a.id;
     topics.push(t);
@@ -449,7 +448,7 @@ export const mockApi: Api = {
   },
   async uploadTopicFile(tid, file) {
     await delay(300); needTeacher();
-    if (file.size > MAX_UPLOAD) throw new Error("檔案太大（上限 50 MB）");
+    if (file.size > MAX_UPLOAD) throw new Error("檔案太大，上限 50 MB");
     const t = findTopic(tid);
     // 假後端：檔案只存在這個分頁的記憶體裡，重新整理就消失
     const r: TopicResource = { id: newId("r"), kind: "file", addedAt: new Date().toISOString(),
@@ -600,7 +599,7 @@ export const mockApi: Api = {
     await delay(300); needStudent();
     const t = findTopic(tid);
     if (!t.acceptsReports) throw new Error("這場辯論沒有開放上傳報告");
-    if (file.size > MAX_UPLOAD) throw new Error("檔案太大（上限 50 MB）");
+    if (file.size > MAX_UPLOAD) throw new Error("檔案太大，上限 50 MB");
     const old = reports.findIndex((r) => r.topicId === tid && r.studentId === MY_ID);
     if (old >= 0) { if (reports[old].file.url.startsWith("blob:")) URL.revokeObjectURL(reports[old].file.url); reports.splice(old, 1); }
     const r: TopicReport = { id: newId("rp"), topicId: tid, studentId: MY_ID, studentName: ME, comment: comment?.trim() ?? "", submittedAt: new Date().toISOString(),

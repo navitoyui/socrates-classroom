@@ -36,7 +36,7 @@ export function studentConclusion(name: string, s: Summary, firstText: string, c
 export function classSynthesis(items: { name: string; claim: string }[]) {
   const groups = new Map<string, { title: string; names: string[] }>();
   for (const it of items) {
-    const key = it.claim.replace(/「[^」]*」/g, "").replace(/[，。、！？\s]/g, "").slice(0, 6) || "（沒有主張）";
+    const key = it.claim.replace(/「[^」]*」/g, "").replace(/[，。、！？\s]/g, "").slice(0, 6) || "沒有主張";
     const g = groups.get(key) ?? { title: clip(it.claim, 36), names: [] };
     g.names.push(it.name);
     groups.set(key, g);

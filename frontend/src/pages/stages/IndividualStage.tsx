@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Bookmark, BookmarkCheck, ChevronDown, Send } from "lucide-react";
 import { api, type Activity, type ArgumentSummary, type Coverage } from "@/api";
-import { keys, useConclusions, useConfirmPosition, useDialogue, useMembers, useNoteActions, useNotes, usePositions, useProgress, useSetCompleted, useStar, useSynthesis } from "@/api/queries";
+import { keys, useConclusions, useConfirmPosition, useDialogue, useMembers, useNoteActions, useNotes, usePositions, useProgress, useSetCompleted, useStar } from "@/api/queries";
 import { StarMap } from "@/components/star/StarMap";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -107,7 +107,7 @@ function SummaryEditor({ a, initial, onDone }: { a: Activity; initial?: Argument
   if (!cur) return <p className="text-sm text-ink-faint">AI 整理中…</p>;
   return (
     <div className="space-y-3">
-      {!initial && <p className="text-[12px] leading-relaxed text-ink-faint">AI 依你的對話整理了論點，請改成你真正的想法再確認。</p>}
+      {!initial && <p className="text-[12px] leading-relaxed text-ink-faint">AI 整理的草稿，改好再確認。</p>}
       {SUMMARY_KEYS.map((k) => (
         <label key={k} className="block"><span className="mb-1 block text-xs text-ink-dim">{SUMMARY_LABEL[k]}</span>
           <Textarea rows={2} value={cur[k]} onChange={(e) => setForm({ ...cur, [k]: e.target.value })} /></label>
@@ -146,52 +146,52 @@ function Investigation({ a, over }: { a: Activity; over: boolean }) {
         </div>
       ) : (
         <>
-          <p className="text-[12.5px] leading-relaxed text-ink-faint">跟蘇格拉底聊你的想法。<b className="text-ink">AI 只提問、不給答案</b>，追問到你把想法講清楚，再整理成論點。</p>
           <CoverageChips coverage={progress?.coverage} />
           {!over && (progress?.readyToSummarize
-            ? <><p className="text-[12px] text-olive">蘇格拉底覺得你已經說得差不多了，可以整理想法了。</p><Button size="sm" onClick={() => setEditing(true)}>整理我的想法</Button></>
+            ? <><p className="text-[12px] text-olive">可以整理想法了。</p><Button size="sm" onClick={() => setEditing(true)}>整理我的想法</Button></>
             : <p className="text-[12px] text-ink-faint">至少聊 2 輪才能整理。</p>)}
         </>
       )}
-      {a.kind === "debate" && <p className="text-[11.5px] text-ink-faint">你和同學的立場座標，在活動結束後才會公開。</p>}
     </div>
   );
 }
 
-/** 個人思辨的結算：論點、四個面向、輪數、筆記，右欄是對話紀錄；可以重新開啟回去繼續 */
+/** 個人思辨的結算，版面跟團體辯論的結算一樣 */
 function IndividualResult({ a }: { a: Activity }) {
   const { data: progress } = useProgress(a.id);
   const { data: positions = [] } = usePositions(a.id);
-  const { data: synthesis } = useSynthesis(a.id);
   const reopen = useSetCompleted(a.id);
-  const [mode, setMode] = useState<"result" | "notes" | "class">("result");
+  const hasStar = a.axes.length > 0;
+  const { data: star } = useStar(a.id, "done", hasStar);
+  const [tab, setTab] = useState<"star" | "mine" | "class" | "notes" | "chat">(hasStar ? "star" : "mine");
   const mine = positions.find((p) => p.confirmed);
-  const tabs: ["result" | "notes" | "class", string][] = [["result", "結算"], ["notes", "我的筆記"], ...(synthesis ? [["class", "全班"] as ["class", string]] : [])];
-  const result = (
-    <div>
-      <section className="border-b border-line px-5 py-4">
-        <small className="mb-2 block text-[11px] tracking-wider text-bronze">蘇格拉底的結論</small>
-        <MyConclusion a={a} />
-      </section>
-    <div className="space-y-5 px-5 py-4">
-      <div className="flex items-center gap-2"><Badge tone="olive">已完成</Badge><span className="text-[12px] text-ink-faint">對話 {progress?.rounds ?? 0} 輪</span></div>
-      {mine && SUMMARY_KEYS.map((k) => <div key={k}><small className="text-[11px] text-ink-faint">{SUMMARY_LABEL[k]}</small><p className="font-serif text-[15px] leading-relaxed">{mine.summary[k] || "—"}</p></div>)}
-      <div><small className="mb-1.5 block text-[11px] text-ink-faint">對話中出現的面向</small><CoverageChips coverage={progress?.coverage} /></div>
-      <div className="border-t border-line pt-4">
-        <p className="mb-2 text-[12px] text-ink-faint">想再想清楚一點？重新開啟後可以繼續對話、修改論點，再重新完成（結論會重新產生）。</p>
+  const tabs: ["star" | "mine" | "class" | "notes" | "chat", string][] = [...(hasStar ? [["star", "立場星圖"] as ["star", string]] : []), ["mine", "我的結論"], ["class", "全班結果"], ["notes", "我的筆記"], ["chat", "對話紀錄"]];
+
+  const left = (
+    <>
+      <Section>
+        <CardTitle>你的結果</CardTitle>
+        <div className="mb-3 flex items-baseline gap-2"><b className="font-serif text-4xl font-medium text-bronze">{progress?.rounds ?? 0}</b><span className="text-xs text-ink-faint">輪對話</span><Badge tone="olive" className="ml-auto">已完成</Badge></div>
+        <CoverageChips coverage={progress?.coverage} />
+      </Section>
+      {mine && <Section className="space-y-3">{SUMMARY_KEYS.map((k) => <div key={k}><small className="text-[11px] text-ink-faint">{SUMMARY_LABEL[k]}</small><p className="font-serif text-sm leading-relaxed">{mine.summary[k] || "—"}</p></div>)}</Section>}
+      <Section>
         <Button variant="outline" size="sm" disabled={reopen.isPending} onClick={() => reopen.mutate(false)}>回去繼續思辨</Button>
         {reopen.error && <p className="mt-1.5 text-[12.5px] text-wine">{reopen.error.message}</p>}
-      </div>
-    </div>
-    </div>
+      </Section>
+    </>
   );
-  const view = mode === "class" && !synthesis ? "result" : mode; // 老師取消公開時回到結算
+
+  const body = {
+    star: <Section>{star ? <StarMap data={star} /> : <p className="text-sm text-ink-faint">載入中…</p>}</Section>,
+    mine: <Section><MyConclusion a={a} /></Section>,
+    class: <ClassResults a={a} />,
+    notes: <NotesPanel a={a} readOnly />,
+  };
+  const right = tab === "chat" ? <ChatPanel a={a} readOnly /> : <div className="min-h-0 flex-1 overflow-y-auto">{body[tab]}</div>;
   return (
-    <StageLayout
-      leftLabel={tabs.find(([k]) => k === view)?.[1] ?? "結算"}
-      leftHeader={<ModeTabs items={tabs} value={view} onChange={setMode} />}
-      left={view === "result" ? result : view === "class" ? <ClassResults a={a} /> : <NotesPanel a={a} readOnly />}
-      rightLabel="對話紀錄" right={<ChatPanel a={a} readOnly />} />
+    <StageLayout leftLabel="你的結果" left={left}
+      rightLabel={tabs.find(([k]) => k === tab)?.[1] ?? "結算"} rightHeader={<div className="no-scrollbar overflow-x-auto"><ModeTabs items={tabs} value={tab} onChange={setTab} /></div>} right={right} />
   );
 }
 
@@ -216,7 +216,7 @@ function TeacherIndividual({ a }: { a: Activity }) {
   const { data: conclusions = [] } = useConclusions(a.id, a.kind === "individual");
   const [tab, setTab] = useState<"members" | "synthesis">("members");
   const [open, setOpen] = useState<string | null>(null);
-  const { data: star } = useStar(a.id, "individual", a.kind === "debate");
+  const { data: star } = useStar(a.id, "individual", a.axes.length > 0);
   const solo = a.kind === "individual";
   const finished = members.filter((m) => m.individual?.status === (solo ? "done" : "confirmed")).length;
   const pending = members.some((m) => m.simulated && m.individual?.status !== "confirmed");
@@ -224,13 +224,12 @@ function TeacherIndividual({ a }: { a: Activity }) {
   const left = (
     <>
       <Section>
-        <p className="mb-3 text-[12.5px] leading-relaxed text-ink-faint">{solo ? <>每位同學各自跟 AI 對話、整理<b className="text-ink">論點</b>，按「完成」後看到自己的結算。</> : <>每位同學獨立跟 AI 對話；AI 只提問。完成後每人產出<b className="text-ink">座標</b>與<b className="text-ink">論點總結</b>。</>}</p>
         <div className="grid grid-cols-[4em_1fr_auto] items-center gap-3 text-[13px]"><span>{solo ? "已完成" : "已確認"}</span><span className="h-2 overflow-hidden rounded bg-bg-3"><i className="block h-full bg-bronze" style={{ width: `${members.length ? (finished / members.length) * 100 : 0}%` }} /></span><em className="not-italic text-ink-faint">{finished} / {members.length}</em></div>
         {api.dev && pending && <Button variant="outline" size="sm" className="mt-3" onClick={async () => { await api.dev!.simulateIndividual(a.id); for (const k of [keys.members(a.id), keys.star(a.id), keys.conclusions(a.id)]) qc.invalidateQueries({ queryKey: k }); }}>模擬同學完成{solo ? "思辨" : "調查"}</Button>}
       </Section>
-      {!solo && <Section>
-        <CardTitle className="flex items-center justify-between">立場星圖 <span className="font-sans text-xs font-normal text-ink-faint">只有老師看得到</span></CardTitle>
-        {star && star.agents.length ? <StarMap data={star} compact /> : <p className="text-[12.5px] text-ink-faint">還沒有人確認論點。同學確認後，這裡會出現每個人的位置。</p>}
+      {a.axes.length > 0 && <Section>
+        <CardTitle className="flex items-center justify-between">立場星圖</CardTitle>
+        {star && star.agents.length ? <StarMap data={star} compact /> : <p className="text-[12.5px] text-ink-faint">還沒有人確認論點。</p>}
       </Section>}
     </>
   );

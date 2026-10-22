@@ -202,7 +202,7 @@ export function StarMap({ data, compact = false, className }: { data: StarData; 
       </div>
       <aside className="space-y-3">
         <div className="rounded-2xl border border-line bg-bg-2 p-3">
-          <div className="mb-2 text-xs text-ink-faint">量軸（勾 1 條是量表、2 條是平面、3 條是立體）</div>
+          <div className="mb-2 text-xs text-ink-faint">量軸</div>
           {data.axes.map((ax, i) => {
             const on = checked.includes(ax.key);
             const color = AXIS_COLORS[i % AXIS_COLORS.length];

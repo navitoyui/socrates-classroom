@@ -19,7 +19,7 @@ function AnnouncementCard({ a, onEdit, onDelete }: { a: Announcement; onEdit?: (
             {!a.published && <Badge><Clock className="mr-1 size-3" />排程 {formatDateTime(a.publishAt)}</Badge>}
           </div>
           <h3 className="font-serif text-[15.5px] leading-snug">{a.title}</h3>
-          <p className="mt-0.5 text-[11.5px] text-ink-faint">{a.authorName} · {formatDateTime(a.publishAt)}{a.updatedAt > a.publishAt && a.updatedAt !== a.createdAt ? "（已編輯）" : ""}</p>
+          <p className="mt-0.5 text-[11.5px] text-ink-faint">{a.authorName} · {formatDateTime(a.publishAt)}{a.updatedAt > a.publishAt && a.updatedAt !== a.createdAt ? " · 已編輯" : ""}</p>
         </div>
         {(onEdit || onDelete) && (
           <span className="flex shrink-0 gap-1">
@@ -81,7 +81,7 @@ function AnnouncementFormDialog({ classroomId, announcement, open, onOpenChange 
           <label className="block"><span className="mb-1 block text-xs text-ink-dim">標題</span><Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="例如：下週請先讀完《理想國》第一卷" /></label>
           <label className="block"><span className="mb-1 block text-xs text-ink-dim">內容</span><Textarea rows={6} value={body} onChange={(e) => setBody(e.target.value)} placeholder="要讓學生知道的事……" /></label>
           <label className="flex cursor-pointer items-center gap-2 text-[13px] text-ink-dim">
-            <input type="checkbox" className="size-4 accent-bronze" checked={pinned} onChange={(e) => setPinned(e.target.checked)} />置頂（顯示在最上方）
+            <input type="checkbox" className="size-4 accent-bronze" checked={pinned} onChange={(e) => setPinned(e.target.checked)} />置頂
           </label>
           {!published && (
             <div className="flex flex-wrap items-center gap-3">

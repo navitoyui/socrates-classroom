@@ -15,7 +15,7 @@ const eff = (j: Judgment) => avgScores([j]).overall;
 function GroupSummaries({ a, groups, myId }: { a: Activity; groups: Group[]; myId?: string }) {
   return (
     <Section>
-      <CardTitle>論點總結 <span className="font-sans text-xs font-normal text-ink-faint">各組在階段 2 練出來的主張，以及支持它的理由與證據</span></CardTitle>
+      <CardTitle>論點總結</CardTitle>
       <div className="grid gap-3.5 sm:grid-cols-2 xl:grid-cols-3">{groups.map((g, i) => <GroupSummary key={g.id} groupId={g.id} label={g.label} count={g.memberIds.length} color={groupColor(i)} mine={!!myId && g.memberIds.includes(myId)} />)}</div>
       <span className="hidden">{a.id}</span>
     </Section>
@@ -63,7 +63,6 @@ export function ResultsStage({ a, teacher }: { a: Activity; teacher: boolean }) 
       <div className="grid grid-cols-2 gap-2">
         {[[members.length, "成員"], [groups.length, "組別"], [rooms.length, "場次"], [fmt(avgScores(allJ).overall), "平均論證分"]].map(([v, n]) => <div key={String(n)} className="rounded-xl border border-line bg-bg-2 p-2.5"><b className="block font-serif text-xl font-medium text-bronze">{v}</b><span className="text-[11.5px] text-ink-faint">{n}</span></div>)}
       </div>
-      <p className="mt-3 text-[12.5px] text-ink-faint">計分看<b className="text-ink-dim">過程與論證品質</b>，不看立場是否「正確」。</p>
     </Section>
   ) : (
     <Section>
@@ -71,7 +70,6 @@ export function ResultsStage({ a, teacher }: { a: Activity; teacher: boolean }) 
       <div className="mb-2 flex items-baseline gap-2"><b className="font-serif text-4xl font-medium text-bronze">{myRow?.total ?? "—"}</b><span className="text-xs text-ink-faint">總分</span></div>
       {myRow && <div className="flex gap-3.5 text-[12.5px] text-ink-dim"><span>個人 <b className="text-ink">{myRow.individual}</b></span><span>團隊 <b className="text-ink">{myRow.team}</b></span><span>辯論 <b className="text-ink">{myRow.debate}</b></span></div>}
       {myGroup && <p className="mt-2 text-xs text-ink-faint"><i className="mr-1.5 inline-block size-2.5 rounded-full align-middle" style={{ background: groupColor(groupIdx(myGroup.id)) }} />{myGroup.label}</p>}
-      <p className="mt-2 text-[12.5px] text-ink-faint">計分看<b className="text-ink-dim">過程與論證品質</b>，不看立場是否「正確」。</p>
     </Section>
   );
 
@@ -80,7 +78,6 @@ export function ResultsStage({ a, teacher }: { a: Activity; teacher: boolean }) 
     <div>
       <Section>
         <p className="text-xs text-bronze">立場星圖</p><h3 className="mb-1 font-serif text-xl">這場辯論裡，大家的立場</h3>
-        <p className="mb-3 text-[12.5px] leading-relaxed text-ink-dim">每一點是一位同學，圓環標記的是你，顏色是辯論時的組別。拖動下方時間軸，看立場從個人調查到團隊提純之後的變化（第二步為依組內投票推估的示範值）。</p>
         {star && <StarMap data={star} />}
       </Section>
       <GroupSummaries a={a} groups={groups} myId={me?.id} />
@@ -113,7 +110,7 @@ export function ResultsStage({ a, teacher }: { a: Activity; teacher: boolean }) 
         ))}
       </Section>
       <Section>
-        <CardTitle>評分複核 <span className="font-sans text-xs font-normal text-ink-faint">最高與最低的發言。老師可以覆寫，計分以覆寫值為準</span></CardTitle>
+        <CardTitle>評分複核</CardTitle>
         {review.map((j) => {
           const t = turnOf(j);
           const who = members.find((m) => m.id === j.memberId);
@@ -146,7 +143,7 @@ export function ResultsStage({ a, teacher }: { a: Activity; teacher: boolean }) 
   const TIPS = { evidence: "下次發言時，多補一個具體的例子或資料出處，讓別人可以查核。", reasoning: "試著把「因為…所以…」講完整，讓從證據到結論的每一步都看得見。", rebuttal: "先引用對方剛才說的重點，再說明你為什麼不同意，而不是只重複自己的立場。", clarity: "每一則發言把重點收斂成 2–3 句，比較容易被聽懂。" };
   const studentTab = (
     <div>
-      {teacher && <Section><label className="flex items-center gap-2.5 text-[13px] text-ink-dim">查看學生 <select value={who?.id} onChange={(e) => setSid(e.target.value)} className="rounded-lg border border-line-strong bg-bg-2 px-2 py-1 text-ink">{members.map((m) => <option key={m.id} value={m.id}>{m.name}{m.id === "you" ? "（學生模式的你）" : ""}</option>)}</select></label></Section>}
+      {teacher && <Section><label className="flex items-center gap-2.5 text-[13px] text-ink-dim">查看學生 <select value={who?.id} onChange={(e) => setSid(e.target.value)} className="rounded-lg border border-line-strong bg-bg-2 px-2 py-1 text-ink">{members.map((m) => <option key={m.id} value={m.id}>{m.name}</option>)}</select></label></Section>}
       <div className="grid gap-4 lg:grid-cols-[1.25fr_1fr]">
         <div>
           <Section><CardTitle>{who?.isMe ? "我" : who?.name}的座標與論點</CardTitle>
@@ -154,7 +151,7 @@ export function ResultsStage({ a, teacher }: { a: Activity; teacher: boolean }) 
               <div className="space-y-2.5">
                 {coords && star?.axes.map((ax, i) => <div key={ax.key} className="grid grid-cols-[5em_1fr_3em] items-center gap-2 text-[13px]"><b className="text-bronze">{ax.name}</b><span className="flex justify-between text-[11px] text-ink-faint"><span>{ax.left}</span><span>{ax.right}</span></span><span className="text-right text-xs text-ink-dim">{coords[i] >= 0 ? "+" : "−"}{Math.abs(coords[i]).toFixed(2)}</span></div>)}
                 {(["claim", "reason", "evidence"] as const).map((k) => <div key={k}><small className="text-[11px] text-ink-faint">{{ claim: "主張", reason: "理由", evidence: "證據或例子" }[k]}</small><p className="font-serif text-sm leading-relaxed">{pos.summary[k] || "—"}</p></div>)}
-                {!pos.confirmed && <p className="text-xs text-ink-faint">這份座標是 AI 依對話估計的，本人沒有確認。</p>}
+                {!pos.confirmed && <p className="text-xs text-ink-faint">AI 估計，本人未確認。</p>}
               </div>
             ) : <p className="text-sm text-ink-faint">沒有紀錄。</p>}
           </Section>
@@ -191,12 +188,6 @@ export function ResultsStage({ a, teacher }: { a: Activity; teacher: boolean }) 
           </tbody>
         </table>
       </div>
-      <ul className="mt-4 list-disc space-y-1 pl-5 text-xs leading-relaxed text-ink-faint">
-        <li><b className="text-ink-dim">個人</b>：完成調查並確認座標、論點總結的完整度</li>
-        <li><b className="text-ink-dim">團隊</b>：組內發言與投票的參與、組內論點被保留</li>
-        <li><b className="text-ink-dim">辯論</b>：自己發言的論證品質（證據、推理、回應、表達）；沒上場的人用該方平均打八折</li>
-        <li>沒有任何一項看立場是否「正確」。權重由後端設定。</li>
-      </ul>
     </Section>
   );
 
@@ -209,7 +200,6 @@ export function ResultsStage({ a, teacher }: { a: Activity; teacher: boolean }) 
       </Section>
       <Section><CardTitle>需要留意</CardTitle>
         <p className="text-sm">{allJ.length ? `${allJ.filter((j) => j.verifiability === "unverified").length} / ${allJ.length} 則發言沒有提供例子或出處。` : "沒有發言。"}</p>
-        <p className="mt-2 text-xs text-ink-faint">裁判無法查證事實，只標記「有沒有提供出處或例子」。模型用量與花費等資訊，等後端提供後再顯示。</p>
       </Section>
     </div>
   );

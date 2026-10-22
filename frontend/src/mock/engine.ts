@@ -107,8 +107,7 @@ export function simulateIndividual(a: any) {
   let n = 0;
   for (const m of a.members) {
     if (!m.sim || a.positions[m.id]?.confirmed) continue;
-    // 個人辯論沒有價值軸，不能用辯論的模擬方式
-    const coords = a.kind === "individual" ? [] : D.simPosition(a, m);
+    const coords = a.axes.length ? D.simPosition(a, m) : [];
     const summary = a.kind === "individual" ? simIndividualSummary(n) : D.simSummary(a, m, coords);
     a.positions[m.id] = { coords, summary, confirmed: true, rounds: 3 + (n % 5), sim: true };
     a.ready.add(m.id); // 模擬同學完成調查就算準備好了
@@ -118,8 +117,8 @@ export function simulateIndividual(a: any) {
   return n;
 }
 
-/** 活動結束前，學生拿到的座標是 null（老師一律看得到） */
-export const coordsVisible = (a: any, teacher: boolean) => teacher || a.stage === "done";
+/** 學生要等活動結束才拿得到座標；個人辯論是自己完成後（老師一律看得到） */
+export const coordsVisible = (a: any, teacher: boolean) => teacher || (a.kind === "individual" ? a.completed.has("you") : a.stage === "done");
 
 export const toPosition = (a: any, id: string, teacher: boolean) => {
   const p = a.positions[id];
@@ -531,7 +530,7 @@ function drive(a: any, r: any) {
     r.deadline = r.deadline ?? Date.now() + D.DEFAULT_SECONDS[spec.phase] * 1000;
     r._timer = setTimeout(() => {
       const before = r.turns.length;
-      commitTurn(a, r, roomSpec(a, r), "（逾時，這一則沒有發言）");
+      commitTurn(a, r, roomSpec(a, r), "逾時，這一則沒有發言");
       r.deadline = null;
       pushTurnEvents(a, r, before);
       drive(a, r);
@@ -632,9 +631,9 @@ export function adjustScore(a: any, memberId: string, adjust: number) {
 export function starData(a: any) {
   const axes = a.axes.map((x: any) => ({ key: x.key, name: x.name, left: x.left, right: x.right }));
   if (!a.groups.length) {
-    const order = a.members.filter((m: any) => a.positions[m.id]?.confirmed).sort((x: any, y: any) => (y.isYou ? 1 : 0) - (x.isYou ? 1 : 0));
+    const order = a.members.filter((m: any) => a.positions[m.id]?.confirmed && (a.kind !== "individual" || a.completed.has(m.id))).sort((x: any, y: any) => (y.isYou ? 1 : 0) - (x.isYou ? 1 : 0));
     return {
-      axes, hasTimeline: false, initialStep: 0, stepLabels: ["個人調查"], stepNotes: ["每個人自己確認的座標"], groups: null,
+      axes, hasTimeline: false, initialStep: 0, stepLabels: [a.kind === "individual" ? "個人思辨" : "個人調查"], stepNotes: ["每個人自己確認的座標"], groups: null,
       agents: order.map((m: any, i: number) => ({ id: i, me: !!m.isYou, history: [a.positions[m.id].coords, a.positions[m.id].coords] })),
     };
   }
@@ -657,6 +656,6 @@ export function starData(a: any) {
   return {
     axes, agents, hasTimeline: true, initialStep: a.stage === "done" ? 1 : 0,
     groups: { labels: a.groups.map((g: any) => g.label), assignments },
-    stepLabels: ["個人調查後", "團隊提純後"], stepNotes: ["每個人自己確認的座標", "依組內投票推估（示範）"],
+    stepLabels: ["個人調查後", "團隊提純後"], stepNotes: ["每個人自己確認的座標", "依組內投票推估"],
   };
 }

@@ -47,7 +47,7 @@ function MyReport({ topic }: { topic: ClassroomTopic }) {
           <input ref={input} type="file" hidden onChange={(e) => { setFile(e.target.files?.[0] ?? null); e.target.value = ""; }} />
           <Button variant="outline" size="sm" onClick={() => input.current?.click()}><Upload className="size-3.5" />{file ? "換一個檔案" : "選擇檔案"}</Button>
           {file && <p className="text-[13px]">{file.name} <span className="text-[11.5px] text-ink-faint">{formatBytes(file.size)}</span></p>}
-          <Textarea rows={2} placeholder="給老師的說明（選填）" value={comment} onChange={(e) => setComment(e.target.value)} />
+          <Textarea rows={2} placeholder="給老師的說明" value={comment} onChange={(e) => setComment(e.target.value)} />
           <span className="flex gap-2">
             {replacing && <Button variant="ghost" size="sm" onClick={() => { setReplacing(false); setFile(null); }}>取消</Button>}
             <Button size="sm" disabled={!file || submit.isPending} onClick={send}>{submit.isPending ? "上傳中…" : "繳交"}</Button>

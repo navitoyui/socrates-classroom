@@ -75,14 +75,14 @@ JSON 欄位用 camelCase；id 為字串；時間為 ISO 8601；登入用 cookie�
 
 議題分**個人**與**團體**。建立議題時，後端同時建立一個 `Activity`（`title` / `statement` 用議題標題），並把 `activityId` 填回議題：
 - 團體議題：`kind = "debate"`，四階段辯論（個人調查 → 團隊提純 → 辯論比賽 → 結果），由老師推進。
-- 個人議題：`kind = "individual"`，沒有價值軸、不分組、不推進。每位學生各自走「個人思辨（同階段 1 的對話與整理論點）→ 完成 → 結算」，
+- 個人議題：`kind = "individual"`，有價值軸（確認論點時由後端估算座標），不分組、不推進。每位學生各自走「個人思辨（同階段 1 的對話與整理論點）→ 完成 → 結算」，
   完成後可以重新開啟。對話、進度、論點、筆記都沿用階段 1 的 `/api/activities/:id/...` 路徑。
 | 方法 | 路徑 | 說明 |
 |---|---|---|
 | GET | `/api/classrooms/:id/topics` | `ClassroomTopic[]` |
 | GET | `/api/topics/:id` | `ClassroomTopic` |
-| POST | `/api/classrooms/:id/topics` | `TopicInput`（僅老師）。`type = "group"` 時 `activity` 必填 → `ClassroomTopic` |
-| PATCH | `/api/topics/:id` | `Partial<TopicInput>`，不能改 `type`（僅老師）。團體議題的 `activity` 設定只能在還沒有學生開始對話前修改，否則回 409 |
+| POST | `/api/classrooms/:id/topics` | `TopicInput`（僅老師）。`activity` 必填，至少一條價值軸；個人議題只用到 `axes` → `ClassroomTopic` |
+| PATCH | `/api/topics/:id` | `Partial<TopicInput>`，不能改 `type`（僅老師）。`activity` 設定只能在還沒有學生開始對話前修改，否則回 409 |
 | DELETE | `/api/topics/:id` | 僅老師，204；團體議題連同辯論活動一起刪除 |
 | POST | `/api/topics/:id/resources` | `{ name, url }` 新增連結（僅老師）→ `TopicResource` |
 | POST | `/api/topics/:id/resources/files` | **multipart/form-data**，欄位 `file`（僅老師）→ `TopicResource`。超過大小上限回 413 |
@@ -166,7 +166,7 @@ LLM 的提示詞屬於 LLM 組（`llm/`），可併入 #28 的 one-shot 任務�
 ## 立場星圖
 | 方法 | 路徑 | 說明 |
 |---|---|---|
-| GET | `/api/activities/:id/star` | `StarData`。階段 1：老師只看到已確認的人、沒有分組；階段 2 之後含分組；活動結束後多一步「團隊提純後」。**活動結束前學生呼叫回 403**；結束後學生看得到，但看不到其他人的名字 |
+| GET | `/api/activities/:id/star` | `StarData`。階段 1：老師只看到已確認的人、沒有分組；階段 2 之後含分組；活動結束後多一步「團隊提純後」。**活動結束前學生呼叫回 403**；結束後學生看得到，但看不到其他人的名字。個人思辨（`kind = "individual"`）：只有一步、沒有分組，只含已完成的人；學生自己完成後才看得到，否則 403 |
 
 ## 結果
 | 方法 | 路徑 | 說明 |

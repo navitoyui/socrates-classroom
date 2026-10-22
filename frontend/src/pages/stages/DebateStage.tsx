@@ -137,16 +137,13 @@ export function DebateStage({ a, teacher, over }: { a: Activity; teacher: boolea
         </div>
       </Section>
       <Section>
-        <CardTitle>AI 裁判 <span className="font-sans text-xs font-normal text-ink-faint">只評論證品質</span></CardTitle>
+        <CardTitle>AI 裁判</CardTitle>
         <div className="grid grid-cols-2 gap-2.5">{judgeSide("a", ga)}{judgeSide("b", gb)}</div>
-        <p className="mt-3 text-[11.5px] leading-relaxed text-ink-faint">分數由後端的 AI 裁判產生，只看證據、推理、回應、表達，不判斷立場，也不查證事實。</p>
       </Section>
-      <Section>
-        <CardTitle>{mySide ? "我方論點" : "雙方論點"}</CardTitle>
-        {mySide ? (
-          <div className="space-y-1.5">{argList(myGroup)}{myArgs.filter((x) => x.kind === "claim" && x.status !== "dropped").map((c) => <p key={c.id} className="border-l-2 border-line-strong pl-2.5 font-serif text-[12.5px] leading-relaxed text-ink-dim">{c.text}</p>)}</div>
-        ) : <p className="text-xs text-ink-faint">雙方的論點可在階段 2 的各組頁面查看。</p>}
-      </Section>
+      {mySide && <Section>
+        <CardTitle>我方論點</CardTitle>
+        <div className="space-y-1.5">{argList(myGroup)}{myArgs.filter((x) => x.kind === "claim" && x.status !== "dropped").map((c) => <p key={c.id} className="border-l-2 border-line-strong pl-2.5 font-serif text-[12.5px] leading-relaxed text-ink-dim">{c.text}</p>)}</div>
+      </Section>}
     </>
   );
 
@@ -179,7 +176,7 @@ export function DebateStage({ a, teacher, over }: { a: Activity; teacher: boolea
       {room.status === "live" && myTurn && (
         <div className="m-3.5 mt-0 rounded-2xl border border-bronze bg-bronze-soft p-3.5">
           <div className="mb-2.5 flex flex-wrap justify-between gap-2 text-[12.5px]">
-            <span><b>輪到你了</b> · {(mySide === "a" ? ga : gb).label}（{SIDE_NAME[room.turn!.side]}）· {PHASE_NAME[room.phase as keyof typeof PHASE_NAME]}{ROLE_NAME[room.turn!.role] ? "・" + ROLE_NAME[room.turn!.role] : ""}</span>
+            <span><b>輪到你了</b> · {(mySide === "a" ? ga : gb).label}・{SIDE_NAME[room.turn!.side]} · {PHASE_NAME[room.phase as keyof typeof PHASE_NAME]}{ROLE_NAME[room.turn!.role] ? "・" + ROLE_NAME[room.turn!.role] : ""}</span>
             <span className={cn("font-bold tabular-nums", left0 <= 10 ? "text-wine" : "text-bronze")}>剩 {Math.floor(left0 / 60)}:{String(left0 % 60).padStart(2, "0")}</span>
           </div>
           <Textarea rows={3} maxLength={500} value={text} onChange={(e) => setText(e.target.value)} placeholder="寫下你這一輪要說的話：主張、理由，最好再附一個例子或出處…" />
@@ -190,7 +187,7 @@ export function DebateStage({ a, teacher, over }: { a: Activity; teacher: boolea
       {room.status === "live" && !myTurn && room.turn && (
         <div className="m-3.5 mt-0 flex items-center gap-3 rounded-xl bg-bg-2 p-3 text-[13px] text-ink-dim">
           <span className="inline-flex gap-1">{[0, 1, 2].map((i) => <i key={i} className="size-1.5 animate-pulse rounded-full bg-bronze" style={{ animationDelay: `${i * 0.2}s` }} />)}</span>
-          輪到 {speaker(room.turn.memberId)?.isMe ? "你（示範）" : speaker(room.turn.memberId)?.name}（{(room.turn.side === "a" ? ga : gb).label}・{SIDE_NAME[room.turn.side]}）發言…
+          輪到 {speaker(room.turn.memberId)?.isMe ? "你" : speaker(room.turn.memberId)?.name} 發言 · {(room.turn.side === "a" ? ga : gb).label}・{SIDE_NAME[room.turn.side]}
           {api.dev && teacher && !over && <Button variant="outline" size="sm" className="ml-auto" onClick={async () => { await api.dev!.simulateRoom(room.id); invalidate(); }}>模擬完這場</Button>}
         </div>
       )}

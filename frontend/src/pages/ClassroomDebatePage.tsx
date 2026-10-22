@@ -57,13 +57,13 @@ function DebateInfo({ topic, teacher }: { topic: ClassroomTopic; teacher: boolea
       </div>}
       {adding && (
         <div className="mb-3 flex flex-wrap gap-2">
-          <Input className="h-9 min-w-40 flex-1" placeholder="名稱（選填）" value={name} onChange={(e) => setName(e.target.value)} />
+          <Input className="h-9 min-w-40 flex-1" placeholder="名稱" value={name} onChange={(e) => setName(e.target.value)} />
           <Input className="h-9 min-w-56 flex-[2]" placeholder="https://…" value={url} onChange={(e) => setUrl(e.target.value)} onKeyDown={(e) => e.key === "Enter" && url.trim() && addLink.mutate()} />
           <Button size="sm" className="h-9" disabled={!url.trim() || addLink.isPending} onClick={() => addLink.mutate()}>加入</Button>
         </div>
       )}
       {topic.resources.map((r) => <ResourceRow key={r.id} r={r} onDelete={teacher ? () => remove.mutate(r.id) : undefined} />)}
-      {teacher && !topic.resources.length && <p className="text-sm text-ink-faint">還沒有資料。可以加入閱讀材料的連結，或上傳講義、影片等檔案。</p>}
+      {teacher && !topic.resources.length && <p className="text-sm text-ink-faint">還沒有資料。</p>}
       {error && <p className="mt-2 text-[12.5px] text-wine">{error.message}</p>}
     </section>
   );
@@ -152,7 +152,7 @@ export function ClassroomDebatePage() {
         </div>
         {teacher && (
           <span className="flex gap-2">
-            <Button variant="outline" size="sm" disabled={topic.type === "group" && !activity} onClick={() => setEditing(true)}><Pencil className="size-3.5" />編輯</Button>
+            <Button variant="outline" size="sm" disabled={!activity} onClick={() => setEditing(true)}><Pencil className="size-3.5" />編輯</Button>
             <Button variant="danger" size="sm" onClick={() => setDeleting(true)}><Trash2 className="size-3.5" />刪除</Button>
           </span>
         )}

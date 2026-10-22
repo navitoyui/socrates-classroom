@@ -44,7 +44,7 @@ export function ClassroomFormDialog({ classroom, open, onOpenChange, onSaved }: 
             <Input placeholder="例如：高二哲學選修 C" value={name} onChange={(e) => setName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && submit()} />
           </label>
           <label className="block">
-            <span className="mb-1 flex justify-between text-xs text-ink-dim"><span>教室簡介（選填）</span><span className="text-ink-faint">{description.length} / {MAX_DESC}</span></span>
+            <span className="mb-1 flex justify-between text-xs text-ink-dim"><span>教室簡介</span><span className="text-ink-faint">{description.length} / {MAX_DESC}</span></span>
             <Textarea rows={4} maxLength={MAX_DESC} placeholder="這堂課要討論什麼、適合哪些同學……" value={description} onChange={(e) => setDescription(e.target.value)} />
           </label>
           {save.error && <p className="text-[12.5px] text-wine">{save.error.message}</p>}

@@ -21,7 +21,7 @@ function Composer({ classroomId, topicId, parentId, placeholder, onDone, autoFoc
       <Textarea autoFocus={autoFocus} rows={parentId ? 2 : 3} placeholder={placeholder} value={body} onChange={(e) => setBody(e.target.value)} />
       <div className="flex flex-wrap items-center justify-between gap-2">
         {me?.role === "student"
-          ? <label className="flex cursor-pointer items-center gap-1.5 text-[12.5px] text-ink-dim" title="同學看不到你的名字，老師看得到"><input type="checkbox" className="size-4 accent-bronze" checked={anonymous} onChange={(e) => setAnonymous(e.target.checked)} />匿名（老師仍看得到）</label>
+          ? <label className="flex cursor-pointer items-center gap-1.5 text-[12.5px] text-ink-dim" title="同學看不到你的名字，老師看得到"><input type="checkbox" className="size-4 accent-bronze" checked={anonymous} onChange={(e) => setAnonymous(e.target.checked)} />匿名</label>
           : <span />}
         <span className="flex gap-2">
           {onDone && parentId && <Button variant="ghost" size="sm" onClick={onDone}>取消</Button>}
@@ -37,7 +37,7 @@ function PostBody({ p, canDelete, onDelete }: { p: DiscussionPost; canDelete: bo
   return (
     <div className="group">
       <div className="flex items-center gap-2 text-[12px]">
-        <b className={cn("font-medium", p.deleted && "text-ink-faint")}>{p.deleted ? "（已刪除）" : p.authorLabel}</b>
+        <b className={cn("font-medium", p.deleted && "text-ink-faint")}>{p.deleted ? "已刪除" : p.authorLabel}</b>
         {p.authorRole === "teacher" && !p.deleted && <Badge tone="bronze">老師</Badge>}
         <span className="text-ink-faint">{formatDateTime(p.createdAt)}</span>
         {canDelete && !p.deleted && (

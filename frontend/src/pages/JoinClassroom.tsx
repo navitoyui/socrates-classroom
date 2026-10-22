@@ -81,7 +81,7 @@ export function JoinDialog({ classroom, open, onOpenChange }: { classroom?: Clas
         ) : sent ? (
           <>
             <DialogTitle>已送出申請</DialogTitle>
-            <DialogDescription>老師審核後，「{c.name}」就會出現在你的教室列表。審核結果可以在「我的申請」查看。</DialogDescription>
+            <DialogDescription>需要老師審核。</DialogDescription>
             <div className="flex justify-end"><Button onClick={() => onOpenChange(false)}>好</Button></div>
           </>
         ) : (
@@ -97,7 +97,7 @@ export function JoinDialog({ classroom, open, onOpenChange }: { classroom?: Clas
               <div className="space-y-4 text-sm">
                 {c.requireApproval && c.questionnaire.length > 0 && (
                   <div className="space-y-3 rounded-2xl border border-line p-4">
-                    <p className="text-xs text-ink-faint">申請問卷（老師會看到你的回答）</p>
+                    <p className="text-xs text-ink-faint">申請問卷</p>
                     {c.questionnaire.map((q) => <QuestionField key={q.id} q={q} value={answers[q.id] ?? ""} onChange={(v) => setAnswers({ ...answers, [q.id]: v })} />)}
                   </div>
                 )}
@@ -183,8 +183,7 @@ export function ExplorePage() {
   const { data: me } = useMe();
   return (
     <div className="mx-auto max-w-4xl p-8">
-      <h2 className="font-serif text-2xl">探索課程</h2>
-      <p className="mb-6 mt-1 text-sm text-ink-dim">老師開放加入的課程都在這裡；需要審核的課程，送出申請後會出現在「我的申請」。</p>
+      <h2 className="mb-6 font-serif text-2xl">探索課程</h2>
       {me?.role === "teacher" ? <p className="text-sm text-ink-faint">這個頁面是給學生找課程用的。</p> : <><MyApplications /><DiscoverClassrooms /></>}
     </div>
   );
@@ -203,7 +202,7 @@ export function InvitesDialog({ open, onOpenChange }: { open: boolean; onOpenCha
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogTitle>待處理邀請</DialogTitle>
-        <DialogDescription>老師邀請你加入的課程。接受後會出現在你的教室列表。</DialogDescription>
+        <DialogDescription>老師邀請你加入的課程。</DialogDescription>
         <div className="space-y-2">
           {invites.map((c) => (
             <div key={c.id} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line px-4 py-3">

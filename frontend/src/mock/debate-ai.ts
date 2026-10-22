@@ -244,7 +244,7 @@ export function summarizeGroup(activity, group, summaries, coordsById) {
       .map((id) => ({ id, v: coordsById[id][i] * sign }))
       .sort((a, b) => b.v - a.v)[0];
     const s = summaries[lead.id];
-    const claim = { id: newArgId(), kind: "claim", text: `我們傾向「${pole(ax, mean)}」，而不是「${pole(ax, -mean)}」（${ax.name}）`, axis: i, sign, parent: null, status: "active", votes: {} };
+    const claim = { id: newArgId(), kind: "claim", text: `在「${ax.name}」上，我們傾向「${pole(ax, mean)}」，而不是「${pole(ax, -mean)}」`, axis: i, sign, parent: null, status: "active", votes: {} };
     out.push(claim);
     if (s?.reason) out.push({ id: newArgId(), kind: "reason", text: s.reason, axis: i, sign, parent: claim.id, status: "active", votes: {} });
     if (s?.evidence) out.push({ id: newArgId(), kind: "evidence", text: s.evidence, axis: i, sign, parent: claim.id, status: "active", votes: {} });
@@ -319,7 +319,7 @@ export function simChatLine(activity, member, coords, summary, i = 0) {
 const snippet = (t, n = 18) => (t.length > n ? t.slice(0, n) + "…" : t);
 
 export const MODERATOR = {
-  intro: (a, b) => `各位好，我是這場辯論的主持人。${a.label}（A 方）對上${b.label}（B 方），共四個回合：開場、質詢、反駁、結辯。我只管流程與時間，也只看論證的證據與推理，不評判誰的立場才對。`,
+  intro: (a, b) => `各位好，我是這場辯論的主持人。${a.label}・A 方對上${b.label}・B 方，共四個回合：開場、質詢、反駁、結辯。我只管流程與時間，也只看論證的證據與推理，不評判誰的立場才對。`,
   phase: (phase, ctx = {}) =>
     ({
       opening: "第一回合：開場。請 A 方先說明核心主張與證據，接著換 B 方。",
