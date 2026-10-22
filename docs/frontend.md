@@ -28,7 +28,7 @@ React 19 + Vite + TypeScript + TanStack（Router / Query）+ Tailwind CSS 4 + sh
 | `/bank/private`、`/bank/public` | 私人 / 公開題庫 | 選單「題庫」 |
 | `/classrooms` | 已加入的教室（學生另有「待處理邀請」「用邀請碼加入」兩個按鈕） | 選單「教室」 |
 | `/explore` | 探索課程：開放加入的課程、我的申請（只有學生） | 選單「探索」 |
-| `/classrooms/:id?tab=home\|announcements\|debates\|discussion\|members` | 教室：首頁（簡介、行事曆）、公告、辯論列表（老師可新增）、教室討論區、成員 | 點進某個教室 |
+| `/classrooms/:id?tab=home\|announcements\|debates\|discussion\|members` | 教室：首頁（簡介、行事曆）、公告、團體辯論列表、個人辯論列表（老師可新增）、成員 | 點進某個教室 |
 | `/classrooms/:id/debates/:id` | 教室辯論：說明、相關資料（連結 / 檔案）、開始討論或進入辯論、結論報告、辯論討論區 | 點進某個辯論 |
 | `/classrooms/:id/activities/:id` | 辯論活動（四個階段 + 結果） | 點進某場辯論 |
 
@@ -65,9 +65,9 @@ React 19 + Vite + TypeScript + TanStack（Router / Query）+ Tailwind CSS 4 + sh
 | `pages/ListPages.tsx` | 論點總結頁、題庫頁、教室列表頁（老師：新增教室；學生：已加入的教室，待處理邀請與邀請碼加入各是一個按鈕） | `/summary`、`/bank/*`、`/classrooms` |
 | `pages/JoinClassroom.tsx` | 學生加入教室：探索課程頁（搜尋、我的申請）、邀請碼查詢與申請問卷、待處理邀請視窗 | `/explore`、`/classrooms` |
 | `pages/ClassroomAdmin.tsx` | 老師的成員管理：加入方式（邀請碼、探索、審核開關）、申請問卷編輯、待審核申請、批次匯入 | 教室的「成員」分頁 |
-| `pages/ClassroomPage.tsx` | 教室內的「首頁」「公告」「辯論」「討論」「成員」五個分頁：簡介與行事曆、辯論卡片（可依個人 / 團體篩選）、成員表、老師的「新增辯論」與「編輯教室」 | `/classrooms/:id` |
+| `pages/ClassroomPage.tsx` | 教室內的「首頁」「公告」「辯論」「討論」「成員」五個分頁：簡介與行事曆、「辯論」是團體辯論卡片、「討論」是個人辯論卡片、成員表、老師的「新增辯論」與「編輯教室」 | `/classrooms/:id` |
 | `pages/CalendarCard.tsx` | 教室首頁的月曆：辯論截止、公告、辯論階段截止，點了跳到對應頁面 | 教室首頁 |
-| `pages/Discussion.tsx` | 討論區（教室或辯論）：發文、匿名、一層回覆、刪除 | 教室「討論」分頁、辯論頁 |
+| `pages/Discussion.tsx` | 討論區（教室或辯論）：發文、匿名、一層回覆、刪除 | 辯論頁 |
 | `pages/Announcements.tsx` | 公告分頁（老師新增、編輯、刪除、置頂、排程發布） | `/classrooms/:id` |
 | `pages/ClassroomFormDialog.tsx` | 新增 / 編輯教室共用的視窗（名稱、簡介） | 教室列表、教室頁 |
 | `pages/ClassroomDebatePage.tsx` | 辯論詳情：左欄是說明與相關資料（同一格）、個人思辨 / 辯論入口、結論報告；右欄是討論區；老師可編輯與刪除 | `/classrooms/:id/debates/:id` |

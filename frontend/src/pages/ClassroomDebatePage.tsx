@@ -5,12 +5,11 @@ import { ArrowLeft, FileText, Link2, MessageCircle, Pencil, Trash2, Upload, X } 
 import { api } from "@/api";
 import { useActivity, useInvalidateTopic, useMe, useMembers, useTopic } from "@/api/queries";
 import type { ClassroomTopic, TopicResource } from "@/api";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { formatBytes } from "@/lib/utils";
-import { DEBATE_TYPE, DueLabel, STAGE_NAME, StageBar } from "./ClassroomPage";
+import { DEBATE_TYPE, DueLabel, STAGE_NAME, StageBar, TYPE_TAB } from "./ClassroomPage";
 import { DiscussionBoard } from "./Discussion";
 import { DebateFormDialog } from "./DebateFormDialog";
 import { DebateReports } from "./DebateReports";
@@ -78,10 +77,7 @@ function StartPanel({ topic, teacher }: { topic: ClassroomTopic; teacher: boolea
   if (topic.type === "group") {
     return (
       <section className="border-b border-line py-5 first:pt-0 last:border-b-0">
-        <div className="mb-3 flex items-center justify-between gap-3">
-          <span className="text-xs tracking-wider text-ink-faint">辯論活動 · {STAGE_NAME[activity.stage]}</span>
-          <span className="flex flex-wrap gap-1.5">{activity.axes.map((x) => <Badge key={x.key}>{x.left} ⟷ {x.right}</Badge>)}</span>
-        </div>
+        <div className="mb-3 text-xs tracking-wider text-ink-faint">辯論活動 · {STAGE_NAME[activity.stage]}</div>
         <StageBar stage={activity.stage} />
         <Button className="mt-4" asChild>
           <Link to="/classrooms/$classroomId/activities/$activityId" params={{ classroomId: topic.classroomId, activityId: activity.id }}>
@@ -113,12 +109,12 @@ function DeleteDialog({ topic, open, onOpenChange }: { topic: ClassroomTopic; op
   const invalidate = useInvalidateTopic(topic.classroomId);
   const del = useMutation({
     mutationFn: () => api.deleteTopic(topic.id),
-    onSuccess: () => { invalidate(); navigate({ to: "/classrooms/$classroomId", params: { classroomId: topic.classroomId }, search: { tab: "debates" } }); },
+    onSuccess: () => { invalidate(); navigate({ to: "/classrooms/$classroomId", params: { classroomId: topic.classroomId }, search: { tab: TYPE_TAB[topic.type] } }); },
   });
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
-        <DialogTitle>刪除辯論？</DialogTitle>
+        <DialogTitle>刪除{DEBATE_TYPE[topic.type]}？</DialogTitle>
         <DialogDescription>「{topic.title}」會被永久刪除{topic.type === "group" ? "，連同辯論活動裡學生的對話、分組與成績" : ""}，無法復原。</DialogDescription>
         {del.error && <p className="mb-3 text-[12.5px] text-wine">{del.error.message}</p>}
         <div className="flex justify-end gap-2">
@@ -139,7 +135,7 @@ export function ClassroomDebatePage() {
   const [deleting, setDeleting] = useState(false);
   const teacher = me?.role === "teacher";
 
-  const back = <Link to="/classrooms/$classroomId" params={{ classroomId }} search={{ tab: "debates" }} className="inline-flex items-center gap-1.5 rounded-full border border-line-strong bg-bg-2 px-3.5 py-1.5 text-[13px] text-ink-dim hover:text-ink"><ArrowLeft className="size-3.5" />回辯論列表</Link>;
+  const back = <Link to="/classrooms/$classroomId" params={{ classroomId }} search={{ tab: topic ? TYPE_TAB[topic.type] : "debates" }} className="inline-flex items-center gap-1.5 rounded-full border border-line-strong bg-bg-2 px-3.5 py-1.5 text-[13px] text-ink-dim hover:text-ink"><ArrowLeft className="size-3.5" />回{topic?.type === "individual" ? "討論" : "辯論"}列表</Link>;
   if (error) return <div className="mx-auto max-w-3xl p-8">{back}<p className="mt-6 text-sm text-ink-faint">{error.message}</p></div>;
   if (!topic) return null;
   return (
@@ -147,7 +143,7 @@ export function ClassroomDebatePage() {
       {back}
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
-          <div className="mb-1.5 flex flex-wrap items-center gap-2"><Badge tone={DEBATE_TYPE[topic.type].tone}>{DEBATE_TYPE[topic.type].name}辯論</Badge><DueLabel at={topic.dueAt} /></div>
+          <div className="mb-1.5"><DueLabel at={topic.dueAt} /></div>
           <h2 className="font-serif text-2xl leading-snug">{topic.title}</h2>
         </div>
         {teacher && (

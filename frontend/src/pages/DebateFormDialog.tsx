@@ -12,8 +12,8 @@ type AxisDraft = Settings["axes"][number];
 
 const EMPTY_AXES: AxisDraft[] = [{ name: "", left: "", right: "" }, { name: "", left: "", right: "" }];
 const TYPE_INFO: Record<TopicType, [string, string]> = {
-  individual: ["個人辯論", "每位學生各自和蘇格拉底進行個人思辨，完成後看到自己的結算。"],
-  group: ["團體辯論", "先各自對話找出立場，再依立場分組、辯論。"],
+  individual: ["討論", "每位學生各自和蘇格拉底進行個人思辨，完成後看到自己的結算。"],
+  group: ["辯論", "先各自對話找出立場，再依立場分組、辯論。"],
 };
 
 function Segmented<T extends string>({ items, value, onChange }: { items: [T, string][]; value: T; onChange: (v: T) => void }) {
@@ -58,9 +58,10 @@ function DebateSettingsFields({ group, mode, setMode, axes, setAxes, size, setSi
   );
 }
 
-/** 新增辯論（不帶 topic）或編輯辯論。編輯時要帶 activity 才能顯示原本的辯論設定 */
-export function DebateFormDialog({ classroomId, topic, activity, open, onOpenChange, onSaved }: {
+/** 新增辯論（不帶 topic，用 type 指定類型）或編輯辯論。編輯時要帶 activity 才能顯示原本的辯論設定 */
+export function DebateFormDialog({ classroomId, type: newType = "individual", topic, activity, open, onOpenChange, onSaved }: {
   classroomId: string;
+  type?: TopicType;
   topic?: ClassroomTopic;
   activity?: Activity;
   open: boolean;
@@ -82,7 +83,7 @@ export function DebateFormDialog({ classroomId, topic, activity, open, onOpenCha
 
   useEffect(() => {
     if (!open) return;
-    setType(topic?.type ?? "individual");
+    setType(topic?.type ?? newType);
     setTitle(topic?.title ?? "");
     setDescription(topic?.description ?? "");
     setDue(toLocalInput(topic?.dueAt ?? null));
@@ -113,10 +114,9 @@ export function DebateFormDialog({ classroomId, topic, activity, open, onOpenCha
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-xl">
-        <DialogTitle>{editing ? "編輯辯論" : "新增辯論"}</DialogTitle>
+        <DialogTitle>{editing ? "編輯" : "新增"}{TYPE_INFO[type][0]}</DialogTitle>
         <DialogDescription>{TYPE_INFO[type][1]}</DialogDescription>
         <div className="space-y-4 text-sm">
-          {!editing && <div><span className="mb-1 block text-xs text-ink-dim">辯論類型</span><Segmented items={[["individual", TYPE_INFO.individual[0]], ["group", TYPE_INFO.group[0]]]} value={type} onChange={setType} /></div>}
           <label className="block"><span className="mb-1 block text-xs text-ink-dim">辯論主題</span><Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="例如：正義是否只是強者的利益？" /></label>
           <label className="block"><span className="mb-1 block text-xs text-ink-dim">詳細說明</span><Textarea rows={4} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="辯論背景、要思考的方向、閱讀材料的重點……" /></label>
           <div className="flex flex-wrap items-end gap-x-6 gap-y-3">
@@ -140,7 +140,7 @@ export function DebateFormDialog({ classroomId, topic, activity, open, onOpenCha
           {(err || save.error) && <p className="text-[12.5px] text-wine">{err || save.error?.message}</p>}
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => onOpenChange(false)}>取消</Button>
-            <Button onClick={submit} disabled={save.isPending}>{editing ? "儲存" : "建立辯論"}</Button>
+            <Button onClick={submit} disabled={save.isPending}>{editing ? "儲存" : `建立${TYPE_INFO[type][0]}`}</Button>
           </div>
         </div>
       </DialogContent>
