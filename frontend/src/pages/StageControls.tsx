@@ -82,7 +82,7 @@ export function StageStatus({ a, teacher, seeing, onBackToNow }: { a: Activity; 
     const done = !teacher && me?.individual?.status === "done";
     return (
       <div className="flex flex-wrap items-center justify-end gap-x-3 gap-y-1.5">
-        <span className="text-[13px] font-semibold text-bronze">{done ? "結算" : "個人思辨"}</span>
+        <span className="text-[13px] font-semibold text-bronze">{done ? "結算" : "討論中"}</span>
         {a.stageDeadline && <Countdown deadline={a.stageDeadline} />}
         {teacher && <TeacherMenu a={a} />}
       </div>
@@ -109,7 +109,7 @@ function IndividualStrip({ a }: { a: Activity }) {
   const { data: members = [] } = useMembers(a.id);
   const done = members.find((m) => m.isMe)?.individual?.status === "done";
   return (
-    <div className="flex h-4 shrink-0 items-center" role="progressbar" aria-label="個人思辨進度" aria-valuemin={1} aria-valuemax={2} aria-valuenow={done ? 2 : 1} aria-valuetext={done ? "結算" : "個人思辨"}>
+    <div className="flex h-4 shrink-0 items-center" role="progressbar" aria-label="討論進度" aria-valuemin={1} aria-valuemax={2} aria-valuenow={done ? 2 : 1} aria-valuetext={done ? "結算" : "討論中"}>
       <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-bg-3">
         <i className="absolute inset-y-0 left-0 rounded-full bg-bronze transition-[width] duration-500" style={{ width: done ? "100%" : "50%" }} />
       </div>

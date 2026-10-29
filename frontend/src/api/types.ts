@@ -505,6 +505,7 @@ export type ActivityEvent =
   | { type: "stage_changed"; stage: Stage }
   | { type: "deadline_changed"; deadline: string | null }
   | { type: "member_ready"; memberId: string; ready: boolean }
+  | { type: "member_updated"; memberId: string }
   | { type: "group_message"; message: GroupMessage }
   | { type: "argument_updated"; argument: GroupArgument }
   | { type: "turn_created"; turn: Turn; judgment?: Judgment }

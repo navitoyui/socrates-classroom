@@ -26,7 +26,7 @@ export function ActivityPage() {
       <div className="flex flex-wrap items-center gap-3 border-b border-line px-4 py-3">
         <Button variant="outline" size="sm" asChild>
           {a.topicId
-            ? <Link to="/classrooms/$classroomId/debates/$debateId" params={{ classroomId, debateId: a.topicId }}><ArrowLeft className="size-3.5" />辯論</Link>
+            ? <Link to="/classrooms/$classroomId/debates/$debateId" params={{ classroomId, debateId: a.topicId }}><ArrowLeft className="size-3.5" />{a.kind === "individual" ? "討論" : "辯論"}</Link>
             : <Link to="/classrooms/$classroomId" params={{ classroomId }} search={{ tab: "debates" }}><ArrowLeft className="size-3.5" />教室</Link>}
         </Button>
         <h2 className="min-w-0 flex-1 truncate font-serif text-[19px] leading-tight" title={a.statement}>{a.statement}</h2>

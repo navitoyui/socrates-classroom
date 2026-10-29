@@ -40,7 +40,7 @@ JSON 欄位用 camelCase；id 為字串；時間為 ISO 8601；登入用 cookie�
 | POST | `/api/activities/:id/finish` | 僅老師；從任何階段直接進入 `done`，用目前已有的資料計分 → `Activity`。個人思辨（`kind = "individual"`）回 409 |
 | PUT | `/api/activities/:id/completion` | `{ done: boolean }`（學生，只限 `kind = "individual"`）→ 204。`true` = 完成並進入結算（要先確認論點，否則 422）；`false` = 重新開啟。完成期間送對話或改論點回 409；`Member.individual.status` 會是 `"done"` |
 | PUT | `/api/activities/:id/deadline` | `{ deadline: string\|null }`（僅老師）→ `Activity`。**到時間只提醒、不自動推進**；換階段時後端清為 null；變更時發 `deadline_changed` 事件 |
-| GET | `/api/activities/:id/events` | **SSE**，事件見 `ActivityEvent`（階段切換、組內訊息、輪到誰、新發言與評分、截止時間變更、成員準備好了） |
+| GET | `/api/activities/:id/events` | **SSE**，事件見 `ActivityEvent`（階段切換、組內訊息、輪到誰、新發言與評分、截止時間變更、成員準備好了；成員對話輪數、確認論點或完成時發 `member_updated`，讓老師的進度即時更新） |
 | GET | `/api/activities/:id/members` | `Member[]`（含 `ready`） |
 | PUT | `/api/activities/:id/ready` | `{ ready: boolean }`（學生）→ 204；換階段時後端全部重設為 false；發 `member_ready` 事件 |
 

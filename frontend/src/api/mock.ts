@@ -24,11 +24,11 @@ const archives: Archive[] = [
 ];
 
 /**
- * 假後端只有一位學生（名字固定為「你」）：joined = 已加入；invited = 老師邀請了、還沒回應；
+ * 假後端只有一位學生（名字固定為「訪客」）：joined = 已加入；invited = 老師邀請了、還沒回應；
  * 兩者都不是的教室，學生只能從「探索教室」或邀請碼找到。老師只看得到自己（同名）開的教室。
  */
 type StoredClassroom = Classroom & { students: string[]; invited?: boolean };
-const ME = "你";
+const ME = "訪客";
 const classrooms: StoredClassroom[] = [
   { id: "c1", name: "高二哲學選修 A", description: "從柏拉圖《理想國》出發，練習用提問把自己的想法說清楚。", teacherName: "林老師",
     studentCount: 5, debateCount: 1, joined: true, students: ["王○安", "李○恩", "陳○宇", "林○彤", "吳○哲"] },
@@ -256,7 +256,7 @@ export const mockApi: Api = {
   },
   async createClassroom({ name, description }) {
     await delay(); needTeacher();
-    const c: StoredClassroom = { id: newId("c"), name, description, teacherName: user?.name ?? "老師", studentCount: 0, debateCount: 0, joined: true, students: [] };
+    const c: StoredClassroom = { id: newId("c"), name, description, teacherName: user?.name ?? "老師", studentCount: 0, debateCount: 0, joined: false, students: [] };
     classrooms.push(c);
     return pub(c);
   },

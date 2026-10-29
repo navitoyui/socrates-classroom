@@ -334,6 +334,9 @@ export function useActivityEvents(activityId: string) {
         case "member_ready":
           qc.invalidateQueries({ queryKey: keys.members(activityId) });
           break;
+        case "member_updated":
+          for (const k of [keys.members(activityId), keys.star(activityId), keys.conclusions(activityId)]) qc.invalidateQueries({ queryKey: k });
+          break;
       }
     });
   }, [activityId, qc]);

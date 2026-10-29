@@ -16,7 +16,7 @@ import { MemberChip, ModeTabs, Panel, Section, StageLayout } from "./shared";
 const COV: [keyof Coverage, string][] = [["claim", "主張"], ["reason", "理由"], ["evidence", "證據或例子"], ["counter", "反例的回應"]];
 const SUMMARY_LABEL: Record<keyof ArgumentSummary, string> = { claim: "我的主張", reason: "我的理由", evidence: "證據或例子" };
 const SUMMARY_KEYS = Object.keys(SUMMARY_LABEL) as (keyof ArgumentSummary)[];
-const SURVEY_NAME = { debate: "個人調查", individual: "個人思辨" } as const;
+const SURVEY_NAME = { debate: "個人調查", individual: "討論" } as const;
 const STATUS_NAME = { done: "已完成", confirmed: "已確認", talking: "對話中", todo: "未開始" } as const;
 const STATUS_TONE = { done: "olive", confirmed: "olive", talking: "bronze", todo: "neutral" } as const;
 
@@ -172,7 +172,7 @@ function IndividualResult({ a }: { a: Activity }) {
       </Section>
       {mine && <Section className="space-y-3">{SUMMARY_KEYS.map((k) => <div key={k}><small className="text-[11px] text-ink-faint">{SUMMARY_LABEL[k]}</small><p className="font-serif text-sm leading-relaxed">{mine.summary[k] || "—"}</p></div>)}</Section>}
       <Section>
-        <Button variant="outline" size="sm" disabled={reopen.isPending} onClick={() => reopen.mutate(false)}>回去繼續思辨</Button>
+        <Button variant="outline" size="sm" disabled={reopen.isPending} onClick={() => reopen.mutate(false)}>回去繼續討論</Button>
         {reopen.error && <p className="mt-1.5 text-[12.5px] text-wine">{reopen.error.message}</p>}
       </Section>
     </>

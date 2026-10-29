@@ -58,7 +58,7 @@ export const SUGGESTED_AXES = [
 const PAD_NAMES = ["張○婷", "黃○翔", "周○妤", "鄭○翰", "許○晴", "蔡○彥", "郭○廷", "謝○宏"];
 
 export function makeCohort(classroom, { activityId, minSims = 8 } = {}) {
-  const names = classroom.students.filter((n) => n !== "你");
+  const names = classroom.students.filter((n) => n !== "訪客");
   const members = names.map((name, i) => ({ id: "m" + i, name, sim: true }));
   for (let i = members.length; i < minSims; i++) {
     members.push({ id: "m" + i, name: PAD_NAMES.find((n) => !names.includes(n) && !members.some((m) => m.name === n)), sim: true, padded: true });

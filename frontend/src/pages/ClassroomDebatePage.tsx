@@ -89,7 +89,7 @@ function StartPanel({ topic, teacher }: { topic: ClassroomTopic; teacher: boolea
   const status = members.find((m) => m.isMe)?.individual?.status ?? "todo";
   const doneCount = members.filter((m) => m.individual?.status === "done").length;
   const text = teacher ? `已完成 ${doneCount} / ${members.length} 人` : status === "done" ? "已完成" : "";
-  const label = teacher ? "查看學生進度" : { todo: "開始個人思辨", talking: "繼續個人思辨", confirmed: "繼續個人思辨", done: "查看結算" }[status];
+  const label = teacher ? "查看學生進度" : { todo: "進入討論", talking: "繼續討論", confirmed: "繼續討論", done: "查看結算" }[status];
   return (
     <section className="flex flex-wrap items-center justify-between gap-3 border-b border-line py-5 first:pt-0 last:border-b-0">
       <p className="text-sm text-ink-dim">{text}</p>

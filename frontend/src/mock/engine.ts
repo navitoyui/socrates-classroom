@@ -81,6 +81,7 @@ export async function sendDialogue(a: any, text: string, onDelta?: (c: string) =
   for (let i = 0; i < reply.length; i += 4) { await wait(25); onDelta?.(reply.slice(i, i + 4)); }
   const msg = { id: uid("m"), role: "assistant", text: reply, at: now() };
   a.dialogue.push(msg);
+  emit(a.id, { type: "member_updated", memberId: "you" });
   return msg;
 }
 
@@ -100,21 +101,23 @@ export function confirmPosition(a: any, summary: any) {
   if (a.completed.has("you")) throw new Error("你已經完成了，要修改請先重新開啟");
   const d = D.draftPosition(a, userTexts(a));
   a.positions.you = { coords: d.coords, summary, confirmed: true, rounds: userTexts(a).length };
+  emit(a.id, { type: "member_updated", memberId: "you" });
   return toPosition(a, "you", false);
 }
 
+function simulateMember(a: any, m: any) {
+  const n = a.members.indexOf(m);
+  const coords = a.axes.length ? D.simPosition(a, m) : [];
+  const summary = a.kind === "individual" ? simIndividualSummary(n) : D.simSummary(a, m, coords);
+  a.positions[m.id] = { coords, summary, confirmed: true, rounds: 3 + (n % 5), sim: true };
+  a.ready.add(m.id);
+  if (a.kind === "individual") { a.completed.add(m.id); a.conclusions[m.id] = { readyAt: Date.now() }; }
+}
+
 export function simulateIndividual(a: any) {
-  let n = 0;
-  for (const m of a.members) {
-    if (!m.sim || a.positions[m.id]?.confirmed) continue;
-    const coords = a.axes.length ? D.simPosition(a, m) : [];
-    const summary = a.kind === "individual" ? simIndividualSummary(n) : D.simSummary(a, m, coords);
-    a.positions[m.id] = { coords, summary, confirmed: true, rounds: 3 + (n % 5), sim: true };
-    a.ready.add(m.id); // 模擬同學完成調查就算準備好了
-    if (a.kind === "individual") { a.completed.add(m.id); a.conclusions[m.id] = { readyAt: Date.now() }; }
-    n++;
-  }
-  return n;
+  const pending = a.members.filter((m: any) => m.sim && !a.positions[m.id]?.confirmed);
+  for (const m of pending) simulateMember(a, m);
+  return pending.length;
 }
 
 /** 學生要等活動結束才拿得到座標；個人辯論是自己完成後（老師一律看得到） */
@@ -201,6 +204,7 @@ export function setDeadline(a: any, deadline: string | null) {
 export function setCompleted(a: any, done: boolean) {
   if (a.kind !== "individual") throw new Error("只有個人思辨可以這樣做");
   if (done && !a.positions.you?.confirmed) throw new Error("請先整理並確認你的論點");
+  emit(a.id, { type: "member_updated", memberId: "you" });
   if (done) {
     a.completed.add("you");
     a.conclusions.you = { readyAt: Date.now() + LLM_DELAY }; // 模擬 LLM 產生需要一點時間
