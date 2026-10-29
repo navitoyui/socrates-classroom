@@ -34,10 +34,6 @@ function QuestionField({ q, value, onChange }: { q: JoinQuestion; value: string;
   return <label className="block">{label}{q.kind === "paragraph" ? <Textarea rows={3} value={value} onChange={(e) => onChange(e.target.value)} /> : <Input value={value} onChange={(e) => onChange(e.target.value)} />}</label>;
 }
 
-/**
- * 加入教室：沒帶 classroom 時先輸入邀請碼；找到教室後顯示簡介，
- * 需要審核就填問卷送出申請，不需要就直接加入並進入教室。
- */
 export function JoinDialog({ classroom, open, onOpenChange }: { classroom?: ClassroomPreview; open: boolean; onOpenChange: (v: boolean) => void }) {
   const navigate = useNavigate();
   const join = useJoinClassroom();
@@ -116,7 +112,6 @@ export function JoinDialog({ classroom, open, onOpenChange }: { classroom?: Clas
   );
 }
 
-/** 學生的「探索教室」：老師開放探索的教室，可以直接加入或申請 */
 /** 開放探索的教室；老師只能瀏覽，不能加入 */
 export function DiscoverClassrooms({ teacher = false }: { teacher?: boolean }) {
   const [q, setQ] = useState("");
@@ -156,7 +151,6 @@ export function DiscoverClassrooms({ teacher = false }: { teacher?: boolean }) {
   );
 }
 
-/** 學生的加入申請（審核中可取消；未通過時顯示老師的附註） */
 export function MyApplications() {
   const { data: list = [] } = useMyApplications();
   const cancel = useCancelApplication();
@@ -179,7 +173,6 @@ export function MyApplications() {
   );
 }
 
-/** 探索課程頁（側欄）：學生看自己的申請與開放探索的教室；老師只瀏覽教室 */
 export function ExplorePage() {
   const { data: me } = useMe();
   return (
@@ -190,7 +183,6 @@ export function ExplorePage() {
   );
 }
 
-/** 學生的待處理邀請（從「教室」頁的按鈕打開） */
 export function InvitesDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
   const qc = useQueryClient();
   const { data: classrooms = [] } = useClassrooms();

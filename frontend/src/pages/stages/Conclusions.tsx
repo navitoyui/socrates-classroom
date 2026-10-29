@@ -10,7 +10,6 @@ const Pending = ({ text }: { text: string }) => (
   </p>
 );
 
-/** 一位同學的 LLM 結論：結論摘要、思考的亮點、思辨過程的變化 */
 export function ConclusionView({ c }: { c: StudentConclusion }) {
   if (c.status === "pending") return <Pending text="蘇格拉底正在寫下結論……" />;
   if (c.status === "failed") return <p className="text-[13px] text-wine">結論產生失敗，請稍後再試。</p>;
@@ -29,14 +28,12 @@ export function ConclusionView({ c }: { c: StudentConclusion }) {
   );
 }
 
-/** 學生自己的結論（結算畫面） */
 export function MyConclusion({ a }: { a: Activity }) {
   const { data: list = [] } = useConclusions(a.id);
   const mine = list.find((c) => c.isMine);
   return mine ? <ConclusionView c={mine} /> : <Pending text="蘇格拉底正在寫下結論……" />;
 }
 
-/** 全班結論整合的內容（老師與學生共用） */
 export function SynthesisView({ s }: { s: ClassSynthesis }) {
   if (s.status === "pending") return <Pending text={`正在整合 ${s.basedOn} 位同學的結論……`} />;
   if (s.status === "failed") return <p className="text-[13px] text-wine">整合失敗，請重新產生。</p>;
@@ -63,7 +60,7 @@ export function SynthesisView({ s }: { s: ClassSynthesis }) {
   );
 }
 
-/** 學生的「全班」分頁：老師公開後才看得到全班整合，以及每位同學的匿名結論 */
+/** 老師公開後才看得到 */
 export function ClassResults({ a }: { a: Activity }) {
   const { data: s } = useSynthesis(a.id);
   const { data: list = [] } = useConclusions(a.id);
@@ -88,7 +85,6 @@ export function ClassResults({ a }: { a: Activity }) {
   );
 }
 
-/** 老師：產生、重新產生、公開全班整合 */
 export function TeacherSynthesisPanel({ a }: { a: Activity }) {
   const { data: s } = useSynthesis(a.id);
   const { data: members = [] } = useMembers(a.id);

@@ -3,7 +3,7 @@ import { Plus, X } from "lucide-react";
 import { useSaveTopic } from "@/api/queries";
 import type { Activity, AnswerMode, ClassroomTopic, TopicInput, TopicType } from "@/api";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Input, Textarea } from "@/components/ui/input";
 import { cn, fromLocalInput, toLocalInput } from "@/lib/utils";
 
@@ -11,10 +11,7 @@ type Settings = NonNullable<TopicInput["activity"]>;
 type AxisDraft = Settings["axes"][number];
 
 const EMPTY_AXES: AxisDraft[] = [{ name: "", left: "", right: "" }, { name: "", left: "", right: "" }];
-const TYPE_INFO: Record<TopicType, [string, string]> = {
-  individual: ["討論", "每位學生各自和蘇格拉底進行個人思辨，完成後看到自己的結算。"],
-  group: ["辯論", "先各自對話找出立場，再依立場分組、辯論。"],
-};
+const TYPE_NAME: Record<TopicType, string> = { individual: "討論", group: "辯論" };
 
 function Segmented<T extends string>({ items, value, onChange }: { items: [T, string][]; value: T; onChange: (v: T) => void }) {
   return (
@@ -27,7 +24,6 @@ function Segmented<T extends string>({ items, value, onChange }: { items: [T, st
   );
 }
 
-/** 辯論設定：價值軸；團體辯論另有回答方式與組別人數 */
 function DebateSettingsFields({ group, mode, setMode, axes, setAxes, size, setSize }: {
   group: boolean;
   mode: AnswerMode; setMode: (v: AnswerMode) => void;
@@ -97,7 +93,7 @@ export function DebateFormDialog({ classroomId, type: newType = "individual", to
   }, [open]);
 
   function submit() {
-    if (!title.trim()) return setErr("請填寫辯論主題。");
+    if (!title.trim()) return setErr("請填寫主題。");
     const input: TopicInput = { type, title: title.trim(), description: description.trim(), dueAt: fromLocalInput(due), acceptsReports: reports };
     {
       const clean = axes.filter((x) => x.name.trim() && x.left.trim() && x.right.trim()).map((x) => ({ name: x.name.trim(), left: x.left.trim(), right: x.right.trim() }));
@@ -113,11 +109,10 @@ export function DebateFormDialog({ classroomId, type: newType = "individual", to
   const editing = !!topic;
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl">
-        <DialogTitle>{editing ? "編輯" : "新增"}{TYPE_INFO[type][0]}</DialogTitle>
-        <DialogDescription>{TYPE_INFO[type][1]}</DialogDescription>
+      <DialogContent className="max-w-xl" aria-describedby={undefined}>
+        <DialogTitle className="mb-4">{editing ? "編輯" : "新增"}{TYPE_NAME[type]}</DialogTitle>
         <div className="space-y-4 text-sm">
-          <label className="block"><span className="mb-1 block text-xs text-ink-dim">辯論主題</span><Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="例如：正義是否只是強者的利益？" /></label>
+          <label className="block"><span className="mb-1 block text-xs text-ink-dim">主題</span><Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="例如：正義是否只是強者的利益？" /></label>
           <label className="block"><span className="mb-1 block text-xs text-ink-dim">詳細說明</span><Textarea rows={4} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="辯論背景、要思考的方向、閱讀材料的重點……" /></label>
           <div className="flex flex-wrap items-end gap-x-6 gap-y-3">
             <label className="block">
@@ -133,14 +128,13 @@ export function DebateFormDialog({ classroomId, type: newType = "individual", to
           </div>
           {(
             <div className="space-y-4 rounded-2xl border border-line p-4">
-              <p className="text-xs text-ink-faint">{editing ? "有學生開始對話後就不能再修改。" : "AI 依價值軸推估每個人的立場，畫成立場星圖。"}</p>
               <DebateSettingsFields group={type === "group"} mode={mode} setMode={setMode} axes={axes} setAxes={setAxes} size={size} setSize={setSize} />
             </div>
           )}
           {(err || save.error) && <p className="text-[12.5px] text-wine">{err || save.error?.message}</p>}
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => onOpenChange(false)}>取消</Button>
-            <Button onClick={submit} disabled={save.isPending}>{editing ? "儲存" : `建立${TYPE_INFO[type][0]}`}</Button>
+            <Button onClick={submit} disabled={save.isPending}>{editing ? "儲存" : `建立${TYPE_NAME[type]}`}</Button>
           </div>
         </div>
       </DialogContent>

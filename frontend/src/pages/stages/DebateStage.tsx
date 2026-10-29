@@ -84,7 +84,6 @@ export function DebateStage({ a, teacher, over }: { a: Activity; teacher: boolea
 
   const sideAvg = (side: Side) => avgScores(judgments.filter((j) => j.side === side));
   const phaseIdx = room && room.phase !== "ended" ? PHASES.indexOf(room.phase) : PHASES.length;
-  const unfinished = rooms.filter((r) => r.status !== "finished").length;
   const lastMod = [...turns].reverse().find((t) => t.side === "moderator");
   const bye = groups.find((g) => !rooms.some((r) => r.groupA === g.id || r.groupB === g.id));
 
@@ -106,8 +105,7 @@ export function DebateStage({ a, teacher, over }: { a: Activity; teacher: boolea
   const left = (
     <>
       <Section>
-        <div className="mb-2.5 flex items-center justify-between"><CardTitle className="mb-0">場次</CardTitle>
-          {api.dev && teacher && !over && unfinished > 0 && <Button variant="outline" size="sm" onClick={async () => { await api.dev!.simulateAllRooms(a.id); invalidate(); }}>模擬全部</Button>}</div>
+        <CardTitle>場次</CardTitle>
         <div className="flex flex-col gap-1.5">
           {rooms.map((r) => {
             const x = groups.find((g) => g.id === r.groupA), y = groups.find((g) => g.id === r.groupB);
@@ -166,11 +164,8 @@ export function DebateStage({ a, teacher, over }: { a: Activity; teacher: boolea
       </div>
       {room.status === "scheduled" && (
         <div className="m-3.5 mt-0 space-y-2 rounded-xl bg-bg-2 p-3.5 text-[13px] text-ink-dim">
-          <p>{mySide && !teacher && !over ? "你們的比賽還沒開始。準備好了就請主持人開場。" : "這場比賽還沒開始。"}</p>
-          <div className="flex gap-2">
-            {mySide && !teacher && !over && <Button onClick={async () => { await api.startRoom(room.id); invalidate(); }}>開始比賽</Button>}
-            {api.dev && !over && (teacher || mySide) && <Button variant="outline" onClick={async () => { await api.dev!.simulateRoom(room.id); invalidate(); }}>{teacher ? "模擬本場" : "跳過，讓 AI 模擬完這場"}</Button>}
-          </div>
+          <p>比賽還沒開始。</p>
+          {mySide && !teacher && !over && <Button onClick={async () => { await api.startRoom(room.id); invalidate(); }}>開始比賽</Button>}
         </div>
       )}
       {room.status === "live" && myTurn && (
@@ -179,7 +174,7 @@ export function DebateStage({ a, teacher, over }: { a: Activity; teacher: boolea
             <span><b>輪到你了</b> · {(mySide === "a" ? ga : gb).label}・{SIDE_NAME[room.turn!.side]} · {PHASE_NAME[room.phase as keyof typeof PHASE_NAME]}{ROLE_NAME[room.turn!.role] ? "・" + ROLE_NAME[room.turn!.role] : ""}</span>
             <span className={cn("font-bold tabular-nums", left0 <= 10 ? "text-wine" : "text-bronze")}>剩 {Math.floor(left0 / 60)}:{String(left0 % 60).padStart(2, "0")}</span>
           </div>
-          <Textarea rows={3} maxLength={500} value={text} onChange={(e) => setText(e.target.value)} placeholder="寫下你這一輪要說的話：主張、理由，最好再附一個例子或出處…" />
+          <Textarea rows={3} maxLength={500} value={text} onChange={(e) => setText(e.target.value)} placeholder="寫下這一輪的發言…" />
           {err && <p className="mt-1 text-[12.5px] text-wine">{err}</p>}
           <div className="mt-2.5 flex justify-end"><Button disabled={!text.trim() || post.isPending} onClick={() => post.mutate()}>送出發言</Button></div>
         </div>
@@ -188,10 +183,9 @@ export function DebateStage({ a, teacher, over }: { a: Activity; teacher: boolea
         <div className="m-3.5 mt-0 flex items-center gap-3 rounded-xl bg-bg-2 p-3 text-[13px] text-ink-dim">
           <span className="inline-flex gap-1">{[0, 1, 2].map((i) => <i key={i} className="size-1.5 animate-pulse rounded-full bg-bronze" style={{ animationDelay: `${i * 0.2}s` }} />)}</span>
           輪到 {speaker(room.turn.memberId)?.isMe ? "你" : speaker(room.turn.memberId)?.name} 發言 · {(room.turn.side === "a" ? ga : gb).label}・{SIDE_NAME[room.turn.side]}
-          {api.dev && teacher && !over && <Button variant="outline" size="sm" className="ml-auto" onClick={async () => { await api.dev!.simulateRoom(room.id); invalidate(); }}>模擬完這場</Button>}
         </div>
       )}
-      {room.status === "finished" && <div className="m-3.5 mt-0 rounded-xl bg-bg-2 p-3 text-[13px] text-ink-dim">這場比賽已結束。{teacher && !over && rooms.every((r) => r.status === "finished") ? "全部場次結束，可以「結束活動並結算」。" : ""}</div>}
+      {room.status === "finished" && <div className="m-3.5 mt-0 rounded-xl bg-bg-2 p-3 text-[13px] text-ink-dim">這場比賽已結束。</div>}
     </Panel>
   );
   return <StageLayout leftLabel="場次與裁判" left={left} rightLabel="比賽" right={right} />;

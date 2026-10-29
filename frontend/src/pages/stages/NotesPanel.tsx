@@ -35,7 +35,6 @@ function NoteRow({ n, activityId, readOnly }: { n: ThinkingNote; activityId: str
   );
 }
 
-/** 學生自己的思路筆記：對話中標註的重點（引言樣式）與自己寫下的想法，只有本人看得到 */
 export function NotesPanel({ a, readOnly }: { a: Activity; readOnly: boolean }) {
   const { data: notes = [] } = useNotes(a.id);
   const { create } = useNoteActions(a.id);

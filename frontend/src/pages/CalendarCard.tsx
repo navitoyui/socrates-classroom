@@ -16,7 +16,6 @@ const WEEK = ["日", "一", "二", "三", "四", "五", "六"];
 const dayKey = (d: Date) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
 const pad = (n: number) => String(n).padStart(2, "0");
 
-/** 教室的月曆：辯論截止日、公告、辯論階段截止時間（由後端從既有資料整理） */
 export function CalendarCard({ classroomId }: { classroomId: string }) {
   const navigate = useNavigate();
   const today = new Date();

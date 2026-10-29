@@ -17,7 +17,6 @@ function FileLink({ r }: { r: TopicReport }) {
   );
 }
 
-/** 學生：上傳 / 重新上傳 / 刪除自己的結論報告 */
 function MyReport({ topic }: { topic: ClassroomTopic }) {
   const { data: list = [] } = useReports(topic.id);
   const submit = useSubmitReport(topic.id);
@@ -59,7 +58,6 @@ function MyReport({ topic }: { topic: ClassroomTopic }) {
   );
 }
 
-/** 老師：全班的繳交狀況 */
 function AllReports({ topic }: { topic: ClassroomTopic }) {
   const { data: list = [] } = useReports(topic.id);
   const { data: classroom } = useClassroom(topic.classroomId);

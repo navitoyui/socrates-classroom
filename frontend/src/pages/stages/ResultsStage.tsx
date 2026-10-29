@@ -73,11 +73,9 @@ export function ResultsStage({ a, teacher }: { a: Activity; teacher: boolean }) 
     </Section>
   );
 
-  /* ---- 各分頁 ---- */
   const starTab = (
     <div>
       <Section>
-        <p className="text-xs text-bronze">立場星圖</p><h3 className="mb-1 font-serif text-xl">這場辯論裡，大家的立場</h3>
         {star && <StarMap data={star} />}
       </Section>
       <GroupSummaries a={a} groups={groups} myId={me?.id} />

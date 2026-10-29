@@ -66,7 +66,7 @@ function AnnouncementFormDialog({ classroomId, announcement, open, onOpenChange 
     else if (mode === "schedule") {
       publishAt = fromLocalInput(at);
       if (!publishAt) return setErr("請選擇發布時間。");
-      if (new Date(publishAt).getTime() <= Date.now()) return setErr("排程時間要晚於現在；要馬上發布請選「立即發布」。");
+      if (new Date(publishAt).getTime() <= Date.now()) return setErr("排程時間要晚於現在。");
     }
     setErr("");
     save.mutate({ title: title.trim(), body: body.trim(), pinned, publishAt }, { onSuccess: () => onOpenChange(false) });
@@ -74,9 +74,8 @@ function AnnouncementFormDialog({ classroomId, announcement, open, onOpenChange 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl">
-        <DialogTitle>{announcement ? "編輯公告" : "新增公告"}</DialogTitle>
-        <DialogDescription>{published ? `這則公告已於 ${formatDateTime(announcement.publishAt)} 發布。` : "可以立即發布，或排程在指定時間讓學生看到。"}</DialogDescription>
+      <DialogContent className="max-w-xl" aria-describedby={undefined}>
+        <DialogTitle className="mb-4">{announcement ? "編輯公告" : "新增公告"}</DialogTitle>
         <div className="space-y-4 text-sm">
           <label className="block"><span className="mb-1 block text-xs text-ink-dim">標題</span><Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="例如：下週請先讀完《理想國》第一卷" /></label>
           <label className="block"><span className="mb-1 block text-xs text-ink-dim">內容</span><Textarea rows={6} value={body} onChange={(e) => setBody(e.target.value)} placeholder="要讓學生知道的事……" /></label>
@@ -121,7 +120,6 @@ function DeleteDialog({ classroomId, announcement, onOpenChange }: { classroomId
   );
 }
 
-/** 教室的「公告」分頁：老師可新增、編輯、刪除、排程 */
 export function AnnouncementsTab({ classroomId, teacher }: { classroomId: string; teacher: boolean }) {
   const { data: list = [] } = useAnnouncements(classroomId);
   const [editing, setEditing] = useState<Announcement | "new" | null>(null);
@@ -132,7 +130,7 @@ export function AnnouncementsTab({ classroomId, teacher }: { classroomId: string
       <div className="space-y-3">
         {list.map((a) => <AnnouncementCard key={a.id} a={a} onEdit={teacher ? () => setEditing(a) : undefined} onDelete={teacher ? () => setDeleting(a) : undefined} />)}
       </div>
-      {!list.length && <p className="text-sm text-ink-faint">{teacher ? "還沒有公告。按右上「新增公告」發布第一則。" : "目前沒有公告。"}</p>}
+      {!list.length && <p className="text-sm text-ink-faint">{teacher ? "還沒有公告。" : "目前沒有公告。"}</p>}
       {teacher && (
         <>
           <AnnouncementFormDialog classroomId={classroomId} announcement={editing === "new" ? undefined : editing ?? undefined} open={!!editing} onOpenChange={(v) => !v && setEditing(null)} />

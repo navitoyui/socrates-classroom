@@ -98,7 +98,6 @@ export function TeamStage({ a, teacher, over }: { a: Activity; teacher: boolean;
       )}
     </>
   );
-  // 學生：組別與筆記用最上方的切換按鈕切換
   const left = teacher || mode === "group" ? groupInfo : <NotesPanel a={a} readOnly={over} />;
   const leftHeader = teacher ? undefined : <ModeTabs items={[["group", "我的組別"], ["notes", "我的筆記"]]} value={mode} onChange={setMode} />;
 
@@ -150,7 +149,7 @@ export function TeamStage({ a, teacher, over }: { a: Activity; teacher: boolean;
             onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey && text.trim()) { e.preventDefault(); send.mutate(); } }} />
           <Button onClick={() => text.trim() && send.mutate()} disabled={send.isPending}>送出</Button>
         </div>
-      ) : <p className="border-t border-line px-5 py-3 text-xs text-ink-faint">{over ? "此階段已結束。" : teacher ? "老師觀察中：看得到這組的討論，但不會加入發言。" : "這是其他組別的討論。"}</p>}
+      ) : <p className="border-t border-line px-5 py-3 text-xs text-ink-faint">{over ? "此階段已結束。" : teacher ? "觀察中" : "這是其他組別的討論。"}</p>}
     </Panel>
   );
   return <StageLayout leftLabel={teacher || mode === "group" ? "組別" : "我的筆記"} leftHeader={leftHeader} left={left} rightLabel="組內討論" right={right} />;

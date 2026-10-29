@@ -172,11 +172,8 @@ export function ClassroomsPage() {
 
   return (
     <div className="mx-auto max-w-4xl p-8">
-      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h2 className="font-serif text-2xl">我的教室</h2>
-          <p className="mt-1 max-w-[52ch] text-sm leading-relaxed text-ink-dim">{teacher ? "建立教室、邀請學生加入，之後可以在教室裡管理成員、發起辯論。" : "用老師給的邀請碼加入，或到左側「探索」找開放加入的課程。"}</p>
-        </div>
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+        <h2 className="font-serif text-2xl">我的教室</h2>
         {teacher ? <Button onClick={() => setOpen(true)}><Plus className="size-4" />新增教室</Button> : (
           <span className="flex gap-2">
             <Button variant="outline" onClick={() => setInviting(true)}><Mail className="size-4" />待處理邀請{inviteCount > 0 && <span className="rounded-full bg-bronze px-1.5 text-[11px] font-semibold text-[#221a0c]">{inviteCount}</span>}</Button>
@@ -196,7 +193,7 @@ export function ClassroomsPage() {
           </Link>
         ))}
       </div>
-      {!list.length && <p className="text-sm text-ink-faint">{teacher ? "還沒有建立 any 教室，按上面「新增教室」開始吧。" : "目前還沒有加入任何教室。"}</p>}
+      {!list.length && <p className="text-sm text-ink-faint">{teacher ? "還沒有教室。" : "目前還沒有加入任何教室。"}</p>}
 
       {teacher ? <ClassroomFormDialog open={open} onOpenChange={setOpen} /> : (
         <>

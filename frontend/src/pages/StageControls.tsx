@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Hourglass, MoreHorizontal } from "lucide-react";
-import { api, type Activity, type Stage } from "@/api";
+import type { Activity, Stage } from "@/api";
 import { useActivityControls, useAdvanceActivity, useMembers, useSetReady } from "@/api/queries";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -22,7 +22,6 @@ function Countdown({ deadline }: { deadline: string }) {
   );
 }
 
-/** 老師的「⋯」選單：限時、取消限時、直接結束活動（個人思辨沒有結束活動） */
 function TeacherMenu({ a }: { a: Activity }) {
   const { finish, deadline } = useActivityControls(a.id);
   const [open, setOpen] = useState(false);
@@ -66,10 +65,6 @@ function TeacherMenu({ a }: { a: Activity }) {
   );
 }
 
-/**
- * 標題列右上角：目前階段（或正在回顧的階段）、倒數、準備狀態、推進。
- * 老師的限時與直接結束收在「⋯」選單裡。
- */
 export function StageStatus({ a, teacher, seeing, onBackToNow }: { a: Activity; teacher: boolean; seeing: Stage; onBackToNow: () => void }) {
   const { data: members = [] } = useMembers(a.id);
   const advance = useAdvanceActivity(a.id);
@@ -83,7 +78,6 @@ export function StageStatus({ a, teacher, seeing, onBackToNow }: { a: Activity; 
   const readyCount = members.filter((m) => m.ready).length;
   const error = advance.error ?? setReady.error;
 
-  // 個人思辨：每位學生各自完成，沒有推進、準備好了、直接結束
   if (a.kind === "individual") {
     const done = !teacher && me?.individual?.status === "done";
     return (
@@ -102,17 +96,15 @@ export function StageStatus({ a, teacher, seeing, onBackToNow }: { a: Activity; 
         : <span className="text-[13px] font-semibold text-bronze">{live ? `階段 ${cur + 1} · ${STAGE_NAME[a.stage]}` : "活動已結束"}</span>}
       {live && a.stageDeadline && <Countdown deadline={a.stageDeadline} />}
       {live && askReady && (teacher
-        ? <span className="text-[12.5px] text-ink-faint" title="回報「我準備好了」的人數">準備好 <b className="text-ink">{readyCount}</b>/{members.length}</span>
+        ? <span className="text-[12.5px] text-ink-faint">準備好 <b className="text-ink">{readyCount}</b>/{members.length}</span>
         : me && <Button size="sm" variant={me.ready ? "outline" : "default"} disabled={setReady.isPending} onClick={() => setReady.mutate(!me.ready)}>{me.ready ? "✓ 已準備好" : "我準備好了"}</Button>)}
       {next && teacher && <Button size="sm" disabled={advance.isPending} onClick={() => advance.mutate()}>{a.stage === "debate" ? "結束並結算" : `進入${STAGE_NAME[next]}`} →</Button>}
-      {next && !teacher && api.dev && <Button size="sm" variant="ghost" disabled={advance.isPending} title="示範用：正式使用由老師推進" onClick={() => advance.mutate()}>示範推進 →</Button>}
       {teacher && live && <TeacherMenu a={a} />}
       {error && <p className="w-full text-right text-[12px] text-wine">{error.message}</p>}
     </div>
   );
 }
 
-/** 個人思辨的進度色條：思辨中填一半，完成（結算）填滿 */
 function IndividualStrip({ a }: { a: Activity }) {
   const { data: members = [] } = useMembers(a.id);
   const done = members.find((m) => m.isMe)?.individual?.status === "done";
@@ -125,7 +117,6 @@ function IndividualStrip({ a }: { a: Activity }) {
   );
 }
 
-/** 畫面最下方的進度色條：依階段往前填色；點已經過的那一段可以回顧 */
 export function ProgressStrip({ a, teacher, seeing, onSee }: { a: Activity; teacher: boolean; seeing: Stage; onSee: (s: Stage) => void }) {
   if (a.kind === "individual") return teacher ? null : <IndividualStrip a={a} />;
   return <DebateStrip a={a} seeing={seeing} onSee={onSee} />;

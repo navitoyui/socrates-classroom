@@ -28,7 +28,6 @@ function CoverageChips({ coverage }: { coverage?: Coverage }) {
   );
 }
 
-/** 右側：跟蘇格拉底的對話（回覆用串流一段一段出現；每句話可以標註成筆記） */
 function ChatPanel({ a, readOnly }: { a: Activity; readOnly: boolean }) {
   const qc = useQueryClient();
   const { data: messages = [] } = useDialogue(a.id);
@@ -56,7 +55,6 @@ function ChatPanel({ a, readOnly }: { a: Activity; readOnly: boolean }) {
     }
   }
 
-  /** 已存的訊息可以標註成筆記，再按一次取消 */
   const toggleMark = (id: string, body: string) => {
     const note = notes.find((n) => n.sourceMessageId === id);
     if (note) remove.mutate(note.id);
@@ -98,7 +96,7 @@ function ChatPanel({ a, readOnly }: { a: Activity; readOnly: boolean }) {
   );
 }
 
-/** 直接在欄位裡整理 / 修改論點（不另開視窗）；沒有確認過時，先帶入 AI 依對話整理的草稿 */
+/** 還沒確認過時，先帶入 AI 依對話整理的草稿 */
 function SummaryEditor({ a, initial, onDone }: { a: Activity; initial?: ArgumentSummary; onDone: () => void }) {
   const confirm = useConfirmPosition(a.id);
   const { data: draft } = useQuery({ queryKey: ["draft", a.id], queryFn: () => api.draftPosition(a.id), enabled: !initial, staleTime: 0 });
@@ -121,7 +119,6 @@ function SummaryEditor({ a, initial, onDone }: { a: Activity; initial?: Argument
   );
 }
 
-/** 左欄「個人調查」模式：進度、整理 / 修改論點 */
 function Investigation({ a, over }: { a: Activity; over: boolean }) {
   const { data: progress } = useProgress(a.id);
   const { data: positions = [] } = usePositions(a.id);
@@ -156,7 +153,6 @@ function Investigation({ a, over }: { a: Activity; over: boolean }) {
   );
 }
 
-/** 個人思辨的結算，版面跟團體辯論的結算一樣 */
 function IndividualResult({ a }: { a: Activity }) {
   const { data: progress } = useProgress(a.id);
   const { data: positions = [] } = usePositions(a.id);
@@ -211,7 +207,6 @@ export function IndividualStage({ a, teacher, view }: { a: Activity; teacher: bo
 }
 
 function TeacherIndividual({ a }: { a: Activity }) {
-  const qc = useQueryClient();
   const { data: members = [] } = useMembers(a.id);
   const { data: conclusions = [] } = useConclusions(a.id, a.kind === "individual");
   const [tab, setTab] = useState<"members" | "synthesis">("members");
@@ -219,13 +214,11 @@ function TeacherIndividual({ a }: { a: Activity }) {
   const { data: star } = useStar(a.id, "individual", a.axes.length > 0);
   const solo = a.kind === "individual";
   const finished = members.filter((m) => m.individual?.status === (solo ? "done" : "confirmed")).length;
-  const pending = members.some((m) => m.simulated && m.individual?.status !== "confirmed");
 
   const left = (
     <>
       <Section>
         <div className="grid grid-cols-[4em_1fr_auto] items-center gap-3 text-[13px]"><span>{solo ? "已完成" : "已確認"}</span><span className="h-2 overflow-hidden rounded bg-bg-3"><i className="block h-full bg-bronze" style={{ width: `${members.length ? (finished / members.length) * 100 : 0}%` }} /></span><em className="not-italic text-ink-faint">{finished} / {members.length}</em></div>
-        {api.dev && pending && <Button variant="outline" size="sm" className="mt-3" onClick={async () => { await api.dev!.simulateIndividual(a.id); for (const k of [keys.members(a.id), keys.star(a.id), keys.conclusions(a.id)]) qc.invalidateQueries({ queryKey: k }); }}>模擬同學完成{solo ? "思辨" : "調查"}</Button>}
       </Section>
       {a.axes.length > 0 && <Section>
         <CardTitle className="flex items-center justify-between">立場星圖</CardTitle>
@@ -242,7 +235,7 @@ function TeacherIndividual({ a }: { a: Activity }) {
         return (
           <div key={m.id} className="border-b border-line">
             <div className="grid grid-cols-[1.3fr_auto_3.5em_1.6fr_1.5rem] items-center gap-3 py-3 text-[13px] max-md:grid-cols-[1fr_auto_1.5rem]">
-              <span><MemberChip m={m} />{m.id === "you" && <em className="ml-2 rounded-full bg-bg-3 px-2 py-0.5 text-[10px] not-italic text-ink-dim">學生模式的你</em>}</span>
+              <MemberChip m={m} />
               <Badge tone={STATUS_TONE[st]}>{STATUS_NAME[st]}</Badge>
               <span className="text-xs text-ink-faint max-md:hidden">{m.individual?.rounds ?? 0} 輪</span>
               <span className="truncate text-xs text-ink-dim max-md:hidden">{m.individual?.claim ?? "—"}</span>

@@ -21,19 +21,16 @@ const TAB_NAME: Record<ClassroomTab, string> = { home: "首頁", announcements: 
 
 export const STAGE_NAME: Record<Stage, string> = { individual: "個人調查", team: "團隊提純", debate: "辯論比賽", done: "已結束" };
 const STAGE_ORDER: Stage[] = ["individual", "team", "debate", "done"];
-/** 個人辯論放在「討論」分頁，團體辯論放在「辯論」分頁 */
+/** 個人辯論在「討論」分頁，團體辯論在「辯論」分頁 */
 export const TYPE_TAB: Record<TopicType, ClassroomTab> = { individual: "discussion", group: "debates" };
-/** 介面上的名稱跟分頁一致：個人辯論叫「討論」、團體辯論叫「辯論」 */
 export const DEBATE_TYPE: Record<TopicType, string> = { individual: "討論", group: "辯論" };
 
-/** 截止時間；已過期顯示紅色 */
 export function DueLabel({ at }: { at: string | null }) {
   if (!at) return null;
   const over = new Date(at).getTime() < Date.now();
   return <span className={cn("inline-flex items-center gap-1 text-[11.5px]", over ? "text-wine" : "text-ink-faint")}><CalendarClock className="size-3.5" />{over ? "已截止 " : "截止 "}{formatDateTime(at)}</span>;
 }
 
-/** 團體辯論的進度條 */
 export function StageBar({ stage }: { stage: Stage }) {
   return <div className="flex gap-1">{STAGE_ORDER.map((s, i) => <b key={s} className={cn("h-1 flex-1 rounded-full bg-bg-3", STAGE_ORDER.indexOf(stage) > i && "bg-bronze-dim", stage === s && "bg-bronze")} />)}</div>;
 }
@@ -114,7 +111,6 @@ function MembersTab({ classroomId, teacher }: { classroomId: string; teacher: bo
   );
 }
 
-/** 教室首頁：簡介與行事曆 */
 function HomeTab({ classroom, teacher, onEdit }: { classroom: Classroom; teacher: boolean; onEdit: () => void }) {
   return (
     <div className="space-y-6">

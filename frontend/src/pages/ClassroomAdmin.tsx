@@ -8,10 +8,10 @@ import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/compone
 import { Input, Textarea } from "@/components/ui/input";
 import { cn, formatDateTime } from "@/lib/utils";
 
-function Switch({ checked, onChange, disabled, label, hint }: { checked: boolean; onChange: (v: boolean) => void; disabled?: boolean; label: string; hint: string }) {
+function Switch({ checked, onChange, disabled, label }: { checked: boolean; onChange: (v: boolean) => void; disabled?: boolean; label: string }) {
   return (
-    <label className={cn("flex cursor-pointer items-start justify-between gap-4 py-2.5", disabled && "cursor-default opacity-60")}>
-      <span><span className="block text-[13.5px]">{label}</span><span className="block text-[11.5px] text-ink-faint">{hint}</span></span>
+    <label className={cn("flex cursor-pointer items-center justify-between gap-4 py-2.5", disabled && "cursor-default opacity-60")}>
+      <span className="text-[13.5px]">{label}</span>
       <button type="button" role="switch" aria-checked={checked} aria-label={label} disabled={disabled} onClick={() => onChange(!checked)}
         className={cn("relative mt-0.5 h-5 w-9 shrink-0 cursor-pointer rounded-full transition-colors", checked ? "bg-bronze" : "bg-bg-3")}>
         <i className={cn("absolute top-0.5 size-4 rounded-full bg-white transition-all", checked ? "left-[18px]" : "left-0.5")} />
@@ -20,7 +20,6 @@ function Switch({ checked, onChange, disabled, label, hint }: { checked: boolean
   );
 }
 
-/* ---------- 加入設定（邀請碼、探索、審核） ---------- */
 export function JoinSettingsCard({ classroomId }: { classroomId: string }) {
   const { data: p } = useJoinPolicy(classroomId);
   const update = useUpdateJoinPolicy(classroomId);
@@ -45,13 +44,13 @@ export function JoinSettingsCard({ classroomId }: { classroomId: string }) {
         </span>
       </div>
       <div className="divide-y divide-line">
-        <Switch label="開放用邀請碼加入" hint="學生在教室頁輸入上面的邀請碼就能找到這個教室。" checked={p.codeEnabled} disabled={update.isPending} onChange={(v) => update.mutate({ codeEnabled: v })} />
-        <Switch label="出現在探索教室" hint="所有學生都能搜尋到這個教室並申請加入，不需要邀請碼。" checked={p.discoverable} disabled={update.isPending} onChange={(v) => update.mutate({ discoverable: v })} />
-        <Switch label="加入需要老師審核" hint="學生要先填寫申請問卷，你通過後才會成為成員。" checked={p.requireApproval} disabled={update.isPending} onChange={(v) => update.mutate({ requireApproval: v })} />
+        <Switch label="開放用邀請碼加入" checked={p.codeEnabled} disabled={update.isPending} onChange={(v) => update.mutate({ codeEnabled: v })} />
+        <Switch label="出現在探索教室" checked={p.discoverable} disabled={update.isPending} onChange={(v) => update.mutate({ discoverable: v })} />
+        <Switch label="加入需要老師審核" checked={p.requireApproval} disabled={update.isPending} onChange={(v) => update.mutate({ requireApproval: v })} />
       </div>
       {p.requireApproval && (
         <div className="mt-2 flex items-center justify-between gap-3 rounded-2xl bg-bg-2 px-4 py-3">
-          <span className="text-[12.5px] text-ink-dim">{p.questionnaire.length ? `申請問卷共 ${p.questionnaire.length} 題` : "還沒有申請問卷，學生申請時只需要按送出。"}</span>
+          <span className="text-[12.5px] text-ink-dim">{p.questionnaire.length ? `申請問卷共 ${p.questionnaire.length} 題` : "還沒有申請問卷"}</span>
           <Button variant="outline" size="sm" onClick={() => setEditingQs(true)}><ListPlus className="size-3.5" />編輯問卷</Button>
         </div>
       )}
@@ -61,7 +60,6 @@ export function JoinSettingsCard({ classroomId }: { classroomId: string }) {
   );
 }
 
-/* ---------- 申請問卷編輯 ---------- */
 const KIND_NAME: Record<JoinQuestion["kind"], string> = { text: "單行文字", paragraph: "多行文字", choice: "單選" };
 let draftSeq = 0;
 const blankQuestion = (): JoinQuestion => ({ id: `new-${Date.now().toString(36)}-${draftSeq++}`, prompt: "", kind: "paragraph", required: true });
@@ -114,7 +112,7 @@ function QuestionnaireDialog({ classroomId, questions, open, onOpenChange }: { c
               )}
             </div>
           ))}
-          {!qs.length && <p className="text-sm text-ink-faint">沒有題目：學生申請時只需要按送出。</p>}
+          {!qs.length && <p className="text-sm text-ink-faint">還沒有題目。</p>}
           <Button variant="outline" size="sm" onClick={() => setQs([...qs, blankQuestion()])}><Plus className="size-3.5" />加一題</Button>
           {update.error && <p className="text-[12.5px] text-wine">{update.error.message}</p>}
           <div className="flex justify-end gap-2">
@@ -127,7 +125,6 @@ function QuestionnaireDialog({ classroomId, questions, open, onOpenChange }: { c
   );
 }
 
-/* ---------- 待審核申請 ---------- */
 function ApplicationRow({ a, classroomId }: { a: JoinApplication; classroomId: string }) {
   const review = useReviewApplication(classroomId);
   const [note, setNote] = useState("");
@@ -163,7 +160,6 @@ export function PendingApplications({ classroomId }: { classroomId: string }) {
   );
 }
 
-/* ---------- 批次匯入成員 ---------- */
 /** 每行一個；也接受逗號、頓號或 Tab 分隔（從試算表貼上） */
 const parseNames = (text: string) => text.split(/[\n,，、\t]+/).map((x) => x.trim()).filter(Boolean);
 

@@ -27,7 +27,6 @@ function ResourceRow({ r, onDelete }: { r: TopicResource; onDelete?: () => void 
   );
 }
 
-/** 辯論說明與相關資料（老師可加連結、上傳檔案） */
 function DebateInfo({ topic, teacher }: { topic: ClassroomTopic; teacher: boolean }) {
   const invalidate = useInvalidateTopic(topic.classroomId);
   const fileInput = useRef<HTMLInputElement>(null);
@@ -68,7 +67,6 @@ function DebateInfo({ topic, teacher }: { topic: ClassroomTopic; teacher: boolea
   );
 }
 
-/** 進入辯論的活動：團體辯論是四階段辯論，個人辯論是個人思辨（完成後看到結算） */
 function StartPanel({ topic, teacher }: { topic: ClassroomTopic; teacher: boolean }) {
   const { data: activity } = useActivity(topic.activityId ?? "");
   const { data: members = [] } = useMembers(topic.activityId ?? "", topic.type === "individual");
@@ -88,11 +86,9 @@ function StartPanel({ topic, teacher }: { topic: ClassroomTopic; teacher: boolea
     );
   }
 
-  // 個人辯論：學生看自己的狀態，老師看完成人數
   const status = members.find((m) => m.isMe)?.individual?.status ?? "todo";
   const doneCount = members.filter((m) => m.individual?.status === "done").length;
-  const text = teacher ? `已完成 ${doneCount} / ${members.length} 人`
-    : { todo: "讀完說明和資料後，和蘇格拉底一起思辨你的想法。", talking: "你已經開始思辨了，可以接著上次的對話。", confirmed: "你已經整理好論點，確認後按「完成」就能看到結算。", done: "你已經完成這場辯論的個人思辨。" }[status];
+  const text = teacher ? `已完成 ${doneCount} / ${members.length} 人` : status === "done" ? "已完成" : "";
   const label = teacher ? "查看學生進度" : { todo: "開始個人思辨", talking: "繼續個人思辨", confirmed: "繼續個人思辨", done: "查看結算" }[status];
   return (
     <section className="flex flex-wrap items-center justify-between gap-3 border-b border-line py-5 first:pt-0 last:border-b-0">

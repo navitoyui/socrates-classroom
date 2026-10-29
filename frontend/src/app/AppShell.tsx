@@ -59,6 +59,7 @@ export function AppShell() {
 
   async function logout() {
     await api.logout();
+    qc.clear();
     qc.setQueryData(keys.me, null);
     setSettings(false);
     navigate({ to: "/login" });

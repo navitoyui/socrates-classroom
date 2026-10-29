@@ -10,10 +10,6 @@ import { IndividualStage } from "./stages/IndividualStage";
 import { ResultsStage } from "./stages/ResultsStage";
 import { TeamStage } from "./stages/TeamStage";
 
-/**
- * 辯論的活動頁：上方標題列（右上角是目前階段與控制）、中間左右兩欄、最下方是進度色條。
- * 團體辯論是四階段辯論（點色條上已經過的段落可以回顧）；個人辯論是個人思辨 → 結算。
- */
 export function ActivityPage() {
   const { classroomId, activityId } = useParams({ from: "/_app/classrooms/$classroomId/activities/$activityId" });
   const { data: me } = useMe();

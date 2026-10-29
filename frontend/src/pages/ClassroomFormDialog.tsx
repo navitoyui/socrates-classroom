@@ -2,12 +2,11 @@ import { useEffect, useState } from "react";
 import { useSaveClassroom } from "@/api/queries";
 import type { Classroom } from "@/api";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Input, Textarea } from "@/components/ui/input";
 
 const MAX_DESC = 300;
 
-/** 新增教室（不帶 classroom）與編輯教室名稱、簡介共用的視窗 */
 export function ClassroomFormDialog({ classroom, open, onOpenChange, onSaved }: {
   classroom?: Classroom;
   open: boolean;
@@ -35,9 +34,8 @@ export function ClassroomFormDialog({ classroom, open, onOpenChange, onSaved }: 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogTitle>{classroom ? "編輯教室" : "新增教室"}</DialogTitle>
-        <DialogDescription>{classroom ? "修改教室名稱與簡介，學生會在教室首頁看到簡介。" : "建立之後，可以在教室裡新增成員、發起辯論。"}</DialogDescription>
+      <DialogContent aria-describedby={undefined}>
+        <DialogTitle className="mb-4">{classroom ? "編輯教室" : "新增教室"}</DialogTitle>
         <div className="space-y-4 text-sm">
           <label className="block">
             <span className="mb-1 block text-xs text-ink-dim">教室名稱</span>

@@ -3,7 +3,6 @@ import { PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen } from "
 import type { Member } from "@/api";
 import { cn } from "@/lib/utils";
 
-/* ---------- 左右分割的版面（像 VS Code：拖中間的線調整占比，任一邊可以收成側欄） ---------- */
 type Collapsed = "left" | "right" | null;
 const RATIO_KEY = "stage-split-ratio";
 const COLLAPSED_KEY = "stage-split-collapsed";
@@ -34,7 +33,6 @@ function PaneHeader({ side, label, header, onCollapse }: { side: "left" | "right
   );
 }
 
-/** 收起後留下的側欄（窄螢幕上是一條橫列）：點一下展開 */
 function CollapsedBar({ side, label, onExpand }: { side: "left" | "right"; label: string; onExpand: () => void }) {
   const Icon = side === "left" ? PanelLeftOpen : PanelRightOpen;
   return (
@@ -47,11 +45,6 @@ function CollapsedBar({ side, label, onExpand }: { side: "left" | "right"; label
   );
 }
 
-/**
- * 辯論活動的兩欄：左邊資訊、右邊對話。
- * 寬螢幕可以拖中間的線調整占比（雙擊恢復預設）、也可以把任一邊收成側欄；窄螢幕上下排列。
- * 占比與收合狀態存在瀏覽器，所有階段共用。
- */
 export function StageLayout({ left, right, leftLabel, rightLabel, leftHeader, rightHeader }: {
   left: ReactNode; right: ReactNode; leftLabel: string; rightLabel: string; leftHeader?: ReactNode; rightHeader?: ReactNode;
 }) {
@@ -108,12 +101,10 @@ export function StageLayout({ left, right, leftLabel, rightLabel, leftHeader, ri
   );
 }
 
-/** 背板上的一個區塊（取代卡片）：區塊之間用細線分隔 */
 export const Section = ({ className, children }: { className?: string; children: ReactNode }) => (
   <section className={cn("border-b border-line px-5 py-4 last:border-b-0", className)}>{children}</section>
 );
 
-/** 欄位最上方的模式切換（例如：個人調查 / 我的筆記） */
 export function ModeTabs<T extends string>({ items, value, onChange }: { items: [T, string][]; value: T; onChange: (v: T) => void }) {
   return (
     <div className="inline-flex gap-0.5 rounded-full bg-bg-2 p-0.5" role="tablist">
@@ -131,17 +122,15 @@ export const Bar = ({ value, max = 5, className }: { value: number | null; max?:
   </span>
 );
 
-export function MemberChip({ m }: { m: Pick<Member, "name" | "isMe" | "simulated"> }) {
+export function MemberChip({ m }: { m: Pick<Member, "name" | "isMe"> }) {
   return (
     <span className="inline-flex items-center gap-1.5 text-[13px]">
       <i className={cn("flex size-6 items-center justify-center rounded-full font-serif text-[11.5px] not-italic", m.isMe ? "bg-bronze text-[#221a0c]" : "bg-bronze-soft text-bronze")}>{m.name[0]}</i>
       {m.name}
-      {m.simulated && <em className="rounded-full bg-bg-3 px-1.5 py-px text-[10px] not-italic text-ink-dim" title="教室人數不足時，系統補齊的模擬同學">模擬</em>}
     </span>
   );
 }
 
-/** 右欄的對話區：直接放在背板上 */
 export const Panel = ({ className, children }: { className?: string; children: ReactNode }) => (
   <div className={cn("flex min-h-0 flex-1 flex-col", className)}>{children}</div>
 );
